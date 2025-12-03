@@ -20,7 +20,7 @@ public class MyAssetManager implements Disposable {
     }
 
     public void loadAssets(){
-        manager.load("assets/she.png", Texture.class);
+        manager.load("she.png", Texture.class);
     }
 
     public void finishLoading(){
