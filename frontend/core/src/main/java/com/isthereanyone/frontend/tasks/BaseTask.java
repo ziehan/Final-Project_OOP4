@@ -1,8 +1,5 @@
 package com.isthereanyone.frontend.tasks;
 
-<<<<<<< Updated upstream
-public class BaseTask {
-=======
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
@@ -48,5 +45,19 @@ public abstract class BaseTask {
     public Rectangle getBounds(){
         return bounds;
     }
->>>>>>> Stashed changes
+        System.out.println("Starting task...");
+    }
+
+    protected abstract void performLogic();
+
+    private void completeTask() {
+        isCompleted = true;
+        System.out.println("Task Completed!");
+    }
+
+    public void render(ShapeRenderer shapeRenderer) {
+        if (isCompleted) shapeRenderer.setColor(Color.GREEN);
+        else shapeRenderer.setColor(Color.BLUE);
+        shapeRenderer.rect(bounds.x, bounds.y, bounds.width, bounds.height);
+    }
 }

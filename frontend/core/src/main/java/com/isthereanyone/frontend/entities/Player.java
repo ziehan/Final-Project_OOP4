@@ -1,8 +1,13 @@
 package com.isthereanyone.frontend.entities;
 
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Vector2;
+import com.isthereanyone.frontend.managers.MyAssetManager;
+
 public class Player {
-<<<<<<< Updated upstream
-=======
     public Vector2 position;
     private float speed = 100f;
 
@@ -39,7 +44,6 @@ public class Player {
 
     public void setIdle() {
         isMoving = false;
-    }
 
     public void setDirection(String direction) {
         switch (direction) {
@@ -61,5 +65,5 @@ public class Player {
 
         batch.draw(currentFrame, position.x, position.y);
     }
->>>>>>> Stashed changes
 }
+
