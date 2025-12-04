@@ -1,4 +1,4 @@
-package com.isthereanyone.frontend.tasks;
+package com.isthereanyone.frontend.entities.tasks;
 
 import com.badlogic.gdx.graphics.Color;
 

@@ -1,4 +1,4 @@
-package com.isthereanyone.frontend.tasks;
+package com.isthereanyone.frontend.entities.tasks;
 
 public class WireTask extends BaseTask{
     public WireTask(float x, float y){

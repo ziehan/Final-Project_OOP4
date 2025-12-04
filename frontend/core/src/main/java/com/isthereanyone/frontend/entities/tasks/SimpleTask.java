@@ -1,4 +1,4 @@
-package com.isthereanyone.frontend.tasks;
+package com.isthereanyone.frontend.entities.tasks;
 
 public class SimpleTask extends BaseTask {
     public SimpleTask(float x, float y) {

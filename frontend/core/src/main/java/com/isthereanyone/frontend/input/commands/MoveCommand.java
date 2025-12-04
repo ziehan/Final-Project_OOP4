@@ -9,11 +9,12 @@ public class MoveCommand implements Command {
 
     public MoveCommand() {}
 
-    public void setDirectionVector(Vector2 directionVector){
+    public void setDirectionVector(Vector2 directionVector) {
         this.directionVector.set(directionVector);
     }
-
-    public void setDirectionName(String directionName){
+    public void setDirectionName(String directionName) {
+        this.directionName = directionName;
+    }
 
     @Override
     public void execute(Player player, float delta) {
@@ -21,4 +22,3 @@ public class MoveCommand implements Command {
         player.setDirection(directionName);
     }
 }
-
