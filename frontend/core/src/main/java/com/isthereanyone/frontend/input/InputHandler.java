@@ -24,7 +24,6 @@ public class InputHandler {
 
         if (direction.len2() > 0) {
             direction.nor();
-
             String dirName = getDirectionName(direction);
 
             moveCommand.setDirectionVector(direction);

@@ -1,4 +1,4 @@
-package com.isthereanyone.frontend.tasks;
+package com.isthereanyone.frontend.entities.tasks;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -16,7 +16,7 @@ public abstract class BaseTask {
     }
 
     public final void interact(Player player) {
-        if(isCompleted) return;
+        if (isCompleted) return;
         if (bounds.overlaps(new Rectangle(player.position.x, player.position.y, 32, 32))) {
             startTask();
             executeLogic();
@@ -24,40 +24,19 @@ public abstract class BaseTask {
         }
     }
 
-    private void startTask() {
-        System.out.println("Interacting with task...");
-    }
+    private void startTask() { System.out.println("Starting task..."); }
 
     protected abstract void executeLogic();
 
-    private void completeTask() {
+    protected void completeTask() {
         isCompleted = true;
         debugColor = Color.GREEN;
-        System.out.println("TASK COMPLETED!");
+        System.out.println("TASK DONE!");
         EventManager.getInstance().notifyTaskCompleted(1);
     }
 
     public void render(ShapeRenderer shapeRenderer) {
         shapeRenderer.setColor(debugColor);
-        shapeRenderer.rect(bounds.x, bounds.y, bounds.width, bounds.height);
-    }
-
-    public Rectangle getBounds(){
-        return bounds;
-    }
-        System.out.println("Starting task...");
-    }
-
-    protected abstract void performLogic();
-
-    private void completeTask() {
-        isCompleted = true;
-        System.out.println("Task Completed!");
-    }
-
-    public void render(ShapeRenderer shapeRenderer) {
-        if (isCompleted) shapeRenderer.setColor(Color.GREEN);
-        else shapeRenderer.setColor(Color.BLUE);
         shapeRenderer.rect(bounds.x, bounds.y, bounds.width, bounds.height);
     }
 }

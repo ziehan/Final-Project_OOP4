@@ -10,21 +10,15 @@ import com.isthereanyone.frontend.managers.MyAssetManager;
 public class Player {
     public Vector2 position;
     private float speed = 100f;
-
     private Animation<TextureRegion> walkDown, walkUp, walkLeft, walkRight;
     private Animation<TextureRegion> currentAnimation;
     private float stateTime;
-
     private boolean isMoving = false;
-
-    private static final int FRAME_WIDTH = 32;
-    private static final int FRAME_HEIGHT = 32;
 
     public Player(float startX, float startY) {
         position = new Vector2(startX, startY);
-
         Texture sheet = MyAssetManager.getInstance().get("she.png");
-        TextureRegion[][] tmp = TextureRegion.split(sheet, FRAME_WIDTH, FRAME_HEIGHT);
+        TextureRegion[][] tmp = TextureRegion.split(sheet, 32, 32);
 
         walkDown  = new Animation<>(0.2f, tmp[0]);
         walkUp    = new Animation<>(0.2f, tmp[1]);
@@ -44,6 +38,7 @@ public class Player {
 
     public void setIdle() {
         isMoving = false;
+    }
 
     public void setDirection(String direction) {
         switch (direction) {
@@ -56,14 +51,11 @@ public class Player {
 
     public void render(SpriteBatch batch) {
         TextureRegion currentFrame;
-
         if (isMoving) {
             currentFrame = currentAnimation.getKeyFrame(stateTime, true);
         } else {
             currentFrame = currentAnimation.getKeyFrames()[0];
         }
-
         batch.draw(currentFrame, position.x, position.y);
     }
 }
-
