@@ -3,13 +3,6 @@ package com.isthereanyone.frontend.screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.isthereanyone.frontend.entities.Player;
-import com.isthereanyone.frontend.entities.ghost.Ghost;
-import com.isthereanyone.frontend.input.InputHandler;
-import com.isthereanyone.frontend.tasks.BaseTask;
-import com.isthereanyone.frontend.tasks.TaskFactory;
 
 public class PlayScreen extends BaseScreen {
     private SpriteBatch batch;
@@ -23,6 +16,7 @@ public class PlayScreen extends BaseScreen {
 
     public PlayScreen() {
         super();
+      
         batch = new SpriteBatch();
         shapeRenderer = new ShapeRenderer();
         inputHandler = new InputHandler();
@@ -40,13 +34,33 @@ public class PlayScreen extends BaseScreen {
         Gdx.gl.glClearColor(0.1f, 0.1f, 0.1f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-
         camera.position.set(player.position.x, player.position.y, 0);
         camera.update();
 
+        inputHandler.handleInput(player, delta);
+        ghost.update(player, delta);
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
+            for (BaseTask task : tasks) {
+                task.interact(player);
+            }
+        }
+
+        batch.setProjectionMatrix(camera.combined);
+        shapeRenderer.setProjectionMatrix(camera.combined);
+
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        for (BaseTask task : tasks) {
+            task.render(shapeRenderer);
+        }
+        shapeRenderer.end();
+
+        batch.begin();
+        player.render(batch);
+        ghost.render(batch);
+        batch.end();
 
         inputHandler.handleInput(player, delta);
-
 
         ghost.update(player, delta);
 

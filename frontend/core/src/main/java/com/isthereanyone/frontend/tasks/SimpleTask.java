@@ -6,7 +6,7 @@ public class SimpleTask extends BaseTask {
     }
 
     @Override
-    protected void performLogic() {
-        System.out.println("Connecting wires... (Proses Task)");
+    protected void executeLogic() {
+
     }
 }
