@@ -17,9 +17,40 @@ public class InputHandler {
     }
 
     public void handleInput(Player player, float delta) {
+<<<<<<< Updated upstream
         if (Gdx.input.isKeyPressed(Input.Keys.W)) moveUp.execute(player, delta);
         if (Gdx.input.isKeyPressed(Input.Keys.S)) moveDown.execute(player, delta);
         if (Gdx.input.isKeyPressed(Input.Keys.A)) moveLeft.execute(player, delta);
         if (Gdx.input.isKeyPressed(Input.Keys.D)) moveRight.execute(player, delta);
+=======
+        direction.set(0, 0);
+
+        if (Gdx.input.isKeyPressed(Input.Keys.W)) direction.y = 1;
+        if (Gdx.input.isKeyPressed(Input.Keys.S)) direction.y = -1;
+        if (Gdx.input.isKeyPressed(Input.Keys.A)) direction.x = -1;
+        if (Gdx.input.isKeyPressed(Input.Keys.D)) direction.x = 1;
+
+        boolean isShiftPressed = Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT);
+        player.setRunning(isShiftPressed);
+
+        if (direction.len2() > 0) {
+            direction.nor();
+            String dirName = getDirectionName(direction);
+
+            moveCommand.setDirectionVector(direction);
+            moveCommand.setDirectionName(dirName);
+            moveCommand.execute(player, delta);
+        } else {
+            player.setIdle();
+        }
+    }
+
+    private String getDirectionName(Vector2 dir) {
+        if (Math.abs(dir.x) > 0.1f) {
+            return dir.x > 0 ? "RIGHT" : "LEFT";
+        } else {
+            return dir.y > 0 ? "UP" : "DOWN";
+        }
+>>>>>>> Stashed changes
     }
 }
