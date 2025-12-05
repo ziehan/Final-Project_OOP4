@@ -3,14 +3,23 @@ package com.isthereanyone.frontend.screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
+import com.isthereanyone.frontend.config.GameConfig;
 import com.isthereanyone.frontend.entities.Player;
 import com.isthereanyone.frontend.entities.ghost.Ghost;
 import com.isthereanyone.frontend.entities.tasks.BaseTask;
 import com.isthereanyone.frontend.entities.tasks.TaskFactory;
 import com.isthereanyone.frontend.input.InputHandler;
+import com.isthereanyone.frontend.managers.ScreenManager;
 import com.isthereanyone.frontend.observer.EventManager;
 
 public class PlayScreen extends BaseScreen {
@@ -20,6 +29,11 @@ public class PlayScreen extends BaseScreen {
     private Ghost ghost;
     private InputHandler inputHandler;
     private Array<BaseTask> tasks;
+    private FrameBuffer lightBuffer;
+    private TextureRegion lightBufferRegion;
+    private Texture lightTexture;
+    private SpriteBatch uiBatch;
+    private Viewport uiViewport;
 
     public PlayScreen() {
         super();
@@ -34,8 +48,6 @@ public class PlayScreen extends BaseScreen {
         tasks = new Array<>();
         tasks.add(TaskFactory.createTask("WIRE", 200, 200));
         tasks.add(TaskFactory.createTask("RITUAL", 500, 300));
-<<<<<<< Updated upstream
-=======
 
         OrthographicCamera uiCamera = new OrthographicCamera();
         uiViewport = new FitViewport(GameConfig.VIEWPORT_WIDTH, GameConfig.VIEWPORT_HEIGHT, uiCamera);
@@ -77,26 +89,45 @@ public class PlayScreen extends BaseScreen {
     public void resize(int width, int height) {
         viewport.update(width, height);
         uiViewport.update(width, height, true);
->>>>>>> Stashed changes
     }
 
     @Override
     public void render(float delta) {
+        lightBuffer.begin();
+
+        Gdx.gl.glClearColor(0, 0, 0, 0.95f);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        batch.setProjectionMatrix(camera.combined);
+        batch.begin();
+
+        batch.setBlendFunction(GL20.GL_ZERO, GL20.GL_ONE_MINUS_SRC_ALPHA);
+
+        batch.draw(lightTexture,
+            player.position.x - lightTexture.getWidth()/2 + 16,
+            player.position.y - lightTexture.getHeight()/2 + 16);
+
+        batch.end();
+        batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+        lightBuffer.end();
+
         Gdx.gl.glClearColor(0.1f, 0.1f, 0.1f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        camera.position.set(player.position.x, player.position.y, 0);
+        camera.position.set(player.position.x + 16, player.position.y + 16, 0);
         camera.update();
 
         inputHandler.handleInput(player, delta);
-<<<<<<< Updated upstream
-=======
         if (player.position.x < 0) player.position.x = 0;
         if (player.position.x > 800 - 32) player.position.x = 800 - 32;
         if (player.position.y < 0) player.position.y = 0;
         if (player.position.y > 600 - 32) player.position.y = 600 - 32;
->>>>>>> Stashed changes
         ghost.update(player, delta);
+
+        if (ghost.getPosition().dst(player.position) < 20f) {
+            ScreenManager.getInstance().setScreen(new GameOverScreen());
+            return;
+        }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
             for (BaseTask task : tasks) task.interact(player);
@@ -112,8 +143,6 @@ public class PlayScreen extends BaseScreen {
         player.render(batch);
         ghost.render(batch);
         batch.end();
-<<<<<<< Updated upstream
-=======
 
         uiBatch.setProjectionMatrix(uiViewport.getCamera().combined);
         uiBatch.begin();
@@ -135,12 +164,14 @@ public class PlayScreen extends BaseScreen {
         shapeRenderer.end();
 
         viewport.apply();
->>>>>>> Stashed changes
     }
 
     @Override
     public void dispose() {
         batch.dispose();
         shapeRenderer.dispose();
+        uiBatch.dispose();
+        lightTexture.dispose();
+        lightBuffer.dispose();
     }
 }
