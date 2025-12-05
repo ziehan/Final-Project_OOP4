@@ -17,11 +17,9 @@ public class Player {
     public float currentStamina = 100f;
     private float staminaDrain = 30f;
     private float staminaRegen = 15f;
-
     private boolean isExhausted = false;
     private float regenTimer = 0f;
-    private final float REGEN_DELAY = 1.0f;
-
+    private final float REGEN_DELAY = 0.5f;
     private Animation<TextureRegion> walkDown, walkUp, walkLeft, walkRight;
     private Animation<TextureRegion> currentAnimation;
     private float stateTime;
@@ -86,8 +84,22 @@ public class Player {
         this.isRunning = running;
     }
 
-    public void setIdle() {
+    public void updateIdle(float delta) {
         isMoving = false;
+
+        if(isRunning){
+            regenTimer = 0f;
+        } else {
+            regenTimer += delta;
+        }
+
+        if(regenTimer >= REGEN_DELAY){
+            currentStamina += staminaRegen * delta;
+            if(currentStamina > maxStamina) currentStamina = maxStamina;
+            if(isExhausted && currentStamina > 25f){
+                isExhausted = false;
+            }
+        }
     }
 
     public void setDirection(String direction) {

@@ -33,7 +33,7 @@ public class InputHandler {
             moveCommand.setDirectionName(dirName);
             moveCommand.execute(player, delta);
         } else {
-            player.setIdle();
+            player.updateIdle(delta);
         }
     }
 
