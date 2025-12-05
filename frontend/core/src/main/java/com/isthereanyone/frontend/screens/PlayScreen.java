@@ -10,42 +10,30 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-<<<<<<< Updated upstream
-=======
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.isthereanyone.frontend.config.GameConfig;
->>>>>>> Stashed changes
 import com.isthereanyone.frontend.entities.Player;
 import com.isthereanyone.frontend.entities.ghost.Ghost;
+import com.isthereanyone.frontend.entities.tasks.BaseTask;
+import com.isthereanyone.frontend.entities.tasks.TaskFactory;
 import com.isthereanyone.frontend.input.InputHandler;
-<<<<<<< Updated upstream
-import com.isthereanyone.frontend.tasks.BaseTask;
-import com.isthereanyone.frontend.tasks.TaskFactory;
-=======
 import com.isthereanyone.frontend.managers.ScreenManager;
 import com.isthereanyone.frontend.observer.EventManager;
->>>>>>> Stashed changes
 
 public class PlayScreen extends BaseScreen {
     private SpriteBatch batch;
     private ShapeRenderer shapeRenderer;
-
-
     private Player player;
     private Ghost ghost;
-    private BaseTask task1;
-    private InputHandler inputHandler;
-<<<<<<< Updated upstream
-=======
+    private InputHandler inputHandle;
     private Array<BaseTask> tasks;
     private FrameBuffer lightBuffer;
     private TextureRegion lightBufferRegion;
     private Texture lightTexture;
     private SpriteBatch uiBatch;
     private Viewport uiViewport;
->>>>>>> Stashed changes
 
     public PlayScreen() {
         super();
@@ -53,14 +41,10 @@ public class PlayScreen extends BaseScreen {
         shapeRenderer = new ShapeRenderer();
         inputHandler = new InputHandler();
 
-
-<<<<<<< Updated upstream
         player = new Player(100, 100);
-        ghost = new Ghost(300, 300);
+        ghost = new Ghost(400, 100);
+        EventManager.getInstance().addObserver(ghost);
 
-
-        task1 = TaskFactory.createTask("SIMPLE", 150, 150);
-=======
         tasks = new Array<>();
         tasks.add(TaskFactory.createTask("WIRE", 200, 200));
         tasks.add(TaskFactory.createTask("RITUAL", 500, 300));
@@ -89,7 +73,6 @@ public class PlayScreen extends BaseScreen {
 
                 if (dist < radius) {
                     float alpha = 1f - (float) (dist / radius);
-
                     pixmap.setColor(1f, 1f, 1f, alpha);
                     pixmap.drawPixel(x, y);
                 }
@@ -105,7 +88,6 @@ public class PlayScreen extends BaseScreen {
     public void resize(int width, int height) {
         viewport.update(width, height);
         uiViewport.update(width, height, true);
->>>>>>> Stashed changes
     }
 
     @Override
@@ -131,54 +113,38 @@ public class PlayScreen extends BaseScreen {
         Gdx.gl.glClearColor(0.1f, 0.1f, 0.1f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-<<<<<<< Updated upstream
-
-        camera.position.set(player.position.x, player.position.y, 0);
-=======
         camera.position.set(player.position.x + 16, player.position.y + 16, 0);
->>>>>>> Stashed changes
         camera.update();
 
-
         inputHandler.handleInput(player, delta);
-<<<<<<< Updated upstream
-
-
-        ghost.update(player, delta);
-
-=======
+        
         if (player.position.x < 0) player.position.x = 0;
         if (player.position.x > 800 - 32) player.position.x = 800 - 32;
         if (player.position.y < 0) player.position.y = 0;
         if (player.position.y > 600 - 32) player.position.y = 600 - 32;
+        
         ghost.update(player, delta);
 
         if (ghost.getPosition().dst(player.position) < 20f) {
             ScreenManager.getInstance().setScreen(new GameOverScreen());
             return;
         }
->>>>>>> Stashed changes
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
-            task1.interact(player);
+            for (BaseTask task : tasks) task.interact(player);
         }
 
+        shapeRenderer.setProjectionMatrix(camera.combined);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        for (BaseTask task : tasks) task.render(shapeRenderer);
+        shapeRenderer.end();
 
         batch.setProjectionMatrix(camera.combined);
-        shapeRenderer.setProjectionMatrix(camera.combined);
-
-
         batch.begin();
         player.render(batch);
+        ghost.render(batch);
         batch.end();
-
-<<<<<<< Updated upstream
-
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        ghost.render(shapeRenderer);
-        task1.render(shapeRenderer);
-        shapeRenderer.end();
-=======
+      
         uiBatch.setProjectionMatrix(uiViewport.getCamera().combined);
         uiBatch.begin();
         uiBatch.draw(lightBufferRegion, 0, 0, GameConfig.VIEWPORT_WIDTH, GameConfig.VIEWPORT_HEIGHT);
@@ -187,8 +153,10 @@ public class PlayScreen extends BaseScreen {
         uiViewport.apply();
         shapeRenderer.setProjectionMatrix(uiViewport.getCamera().combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        
         shapeRenderer.setColor(0.2f, 0.2f, 0.2f, 0.8f);
         shapeRenderer.rect(10, GameConfig.VIEWPORT_HEIGHT - 30, 104, 14);
+        
         if (player.currentStamina > 30) {
             shapeRenderer.setColor(0f, 0.8f, 0f, 1f);
         } else {
@@ -196,10 +164,10 @@ public class PlayScreen extends BaseScreen {
         }
         float barWidth = (player.currentStamina / player.maxStamina) * 100f;
         shapeRenderer.rect(12, GameConfig.VIEWPORT_HEIGHT - 28, barWidth, 10);
+        
         shapeRenderer.end();
 
         viewport.apply();
->>>>>>> Stashed changes
     }
 
     @Override

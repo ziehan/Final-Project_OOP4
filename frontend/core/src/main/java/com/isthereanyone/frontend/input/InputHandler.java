@@ -2,36 +2,25 @@ package com.isthereanyone.frontend.input;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.math.Vector2;
 import com.isthereanyone.frontend.entities.Player;
-import com.isthereanyone.frontend.input.commands.Command;
 import com.isthereanyone.frontend.input.commands.MoveCommand;
 
 public class InputHandler {
-    private Command moveUp, moveDown, moveLeft, moveRight;
+    private MoveCommand moveCommand;
+    private Vector2 direction = new Vector2();
 
     public InputHandler() {
-        moveUp = new MoveCommand(0, 1, "UP");
-        moveDown = new MoveCommand(0, -1, "DOWN");
-        moveLeft = new MoveCommand(-1, 0, "LEFT");
-        moveRight = new MoveCommand(1, 0, "RIGHT");
+        moveCommand = new MoveCommand();
     }
 
     public void handleInput(Player player, float delta) {
-<<<<<<< Updated upstream
-        if (Gdx.input.isKeyPressed(Input.Keys.W)) moveUp.execute(player, delta);
-        if (Gdx.input.isKeyPressed(Input.Keys.S)) moveDown.execute(player, delta);
-        if (Gdx.input.isKeyPressed(Input.Keys.A)) moveLeft.execute(player, delta);
-        if (Gdx.input.isKeyPressed(Input.Keys.D)) moveRight.execute(player, delta);
-=======
         direction.set(0, 0);
 
         if (Gdx.input.isKeyPressed(Input.Keys.W)) direction.y = 1;
         if (Gdx.input.isKeyPressed(Input.Keys.S)) direction.y = -1;
         if (Gdx.input.isKeyPressed(Input.Keys.A)) direction.x = -1;
         if (Gdx.input.isKeyPressed(Input.Keys.D)) direction.x = 1;
-
-        boolean isShiftPressed = Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT);
-        player.setRunning(isShiftPressed);
 
         if (direction.len2() > 0) {
             direction.nor();
@@ -51,6 +40,5 @@ public class InputHandler {
         } else {
             return dir.y > 0 ? "UP" : "DOWN";
         }
->>>>>>> Stashed changes
     }
 }
