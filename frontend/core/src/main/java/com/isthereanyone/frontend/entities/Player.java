@@ -9,7 +9,7 @@ import com.isthereanyone.frontend.managers.MyAssetManager;
 
 public class Player {
     public Vector2 position;
-  
+
     private static final float WALK_SPEED = 80f;
     private static final float RUN_SPEED = 140f;
 
@@ -33,7 +33,6 @@ public class Player {
         Texture sheet = MyAssetManager.getInstance().get("she.png");
         TextureRegion[][] tmp = TextureRegion.split(sheet, 32, 32);
 
-        // Kecepatan animasi 0.2f
         walkDown  = new Animation<>(0.2f, tmp[0]);
         walkUp    = new Animation<>(0.2f, tmp[1]);
         walkLeft  = new Animation<>(0.2f, tmp[2]);

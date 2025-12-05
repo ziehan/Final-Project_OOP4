@@ -27,7 +27,7 @@ public class PlayScreen extends BaseScreen {
     private ShapeRenderer shapeRenderer;
     private Player player;
     private Ghost ghost;
-    private InputHandler inputHandle;
+    private InputHandler inputHandler;
     private Array<BaseTask> tasks;
     private FrameBuffer lightBuffer;
     private TextureRegion lightBufferRegion;
@@ -73,6 +73,7 @@ public class PlayScreen extends BaseScreen {
 
                 if (dist < radius) {
                     float alpha = 1f - (float) (dist / radius);
+
                     pixmap.setColor(1f, 1f, 1f, alpha);
                     pixmap.drawPixel(x, y);
                 }
@@ -117,12 +118,10 @@ public class PlayScreen extends BaseScreen {
         camera.update();
 
         inputHandler.handleInput(player, delta);
-        
         if (player.position.x < 0) player.position.x = 0;
         if (player.position.x > 800 - 32) player.position.x = 800 - 32;
         if (player.position.y < 0) player.position.y = 0;
         if (player.position.y > 600 - 32) player.position.y = 600 - 32;
-        
         ghost.update(player, delta);
 
         if (ghost.getPosition().dst(player.position) < 20f) {
@@ -144,7 +143,7 @@ public class PlayScreen extends BaseScreen {
         player.render(batch);
         ghost.render(batch);
         batch.end();
-      
+
         uiBatch.setProjectionMatrix(uiViewport.getCamera().combined);
         uiBatch.begin();
         uiBatch.draw(lightBufferRegion, 0, 0, GameConfig.VIEWPORT_WIDTH, GameConfig.VIEWPORT_HEIGHT);
@@ -153,10 +152,8 @@ public class PlayScreen extends BaseScreen {
         uiViewport.apply();
         shapeRenderer.setProjectionMatrix(uiViewport.getCamera().combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        
         shapeRenderer.setColor(0.2f, 0.2f, 0.2f, 0.8f);
         shapeRenderer.rect(10, GameConfig.VIEWPORT_HEIGHT - 30, 104, 14);
-        
         if (player.currentStamina > 30) {
             shapeRenderer.setColor(0f, 0.8f, 0f, 1f);
         } else {
@@ -164,7 +161,6 @@ public class PlayScreen extends BaseScreen {
         }
         float barWidth = (player.currentStamina / player.maxStamina) * 100f;
         shapeRenderer.rect(12, GameConfig.VIEWPORT_HEIGHT - 28, barWidth, 10);
-        
         shapeRenderer.end();
 
         viewport.apply();

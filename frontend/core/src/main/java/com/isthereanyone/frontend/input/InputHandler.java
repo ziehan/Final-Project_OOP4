@@ -22,6 +22,9 @@ public class InputHandler {
         if (Gdx.input.isKeyPressed(Input.Keys.A)) direction.x = -1;
         if (Gdx.input.isKeyPressed(Input.Keys.D)) direction.x = 1;
 
+        boolean isShiftPressed = Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT);
+        player.setRunning(isShiftPressed);
+
         if (direction.len2() > 0) {
             direction.nor();
             String dirName = getDirectionName(direction);
