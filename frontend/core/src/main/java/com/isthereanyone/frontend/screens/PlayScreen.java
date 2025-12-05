@@ -34,6 +34,50 @@ public class PlayScreen extends BaseScreen {
         tasks = new Array<>();
         tasks.add(TaskFactory.createTask("WIRE", 200, 200));
         tasks.add(TaskFactory.createTask("RITUAL", 500, 300));
+<<<<<<< Updated upstream
+=======
+
+        OrthographicCamera uiCamera = new OrthographicCamera();
+        uiViewport = new FitViewport(GameConfig.VIEWPORT_WIDTH, GameConfig.VIEWPORT_HEIGHT, uiCamera);
+        uiBatch = new SpriteBatch();
+
+        lightTexture = createGradientCircle(300);
+
+        lightBuffer = new FrameBuffer(Pixmap.Format.RGBA8888, (int)GameConfig.VIEWPORT_WIDTH, (int)GameConfig.VIEWPORT_HEIGHT, false);
+        lightBufferRegion = new TextureRegion(lightBuffer.getColorBufferTexture());
+        lightBufferRegion.flip(false, true);
+    }
+
+    private Texture createGradientCircle(int size) {
+        Pixmap pixmap = new Pixmap(size, size, Pixmap.Format.RGBA8888);
+
+        int radius = size / 2;
+        int centerX = size / 2;
+        int centerY = size / 2;
+
+        for (int x = 0; x < size; x++) {
+            for (int y = 0; y < size; y++) {
+                double dist = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
+
+                if (dist < radius) {
+                    float alpha = 1f - (float) (dist / radius);
+
+                    pixmap.setColor(1f, 1f, 1f, alpha);
+                    pixmap.drawPixel(x, y);
+                }
+            }
+        }
+
+        Texture t = new Texture(pixmap);
+        pixmap.dispose();
+        return t;
+    }
+
+    @Override
+    public void resize(int width, int height) {
+        viewport.update(width, height);
+        uiViewport.update(width, height, true);
+>>>>>>> Stashed changes
     }
 
     @Override
@@ -45,6 +89,13 @@ public class PlayScreen extends BaseScreen {
         camera.update();
 
         inputHandler.handleInput(player, delta);
+<<<<<<< Updated upstream
+=======
+        if (player.position.x < 0) player.position.x = 0;
+        if (player.position.x > 800 - 32) player.position.x = 800 - 32;
+        if (player.position.y < 0) player.position.y = 0;
+        if (player.position.y > 600 - 32) player.position.y = 600 - 32;
+>>>>>>> Stashed changes
         ghost.update(player, delta);
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
@@ -61,6 +112,30 @@ public class PlayScreen extends BaseScreen {
         player.render(batch);
         ghost.render(batch);
         batch.end();
+<<<<<<< Updated upstream
+=======
+
+        uiBatch.setProjectionMatrix(uiViewport.getCamera().combined);
+        uiBatch.begin();
+        uiBatch.draw(lightBufferRegion, 0, 0, GameConfig.VIEWPORT_WIDTH, GameConfig.VIEWPORT_HEIGHT);
+        uiBatch.end();
+
+        uiViewport.apply();
+        shapeRenderer.setProjectionMatrix(uiViewport.getCamera().combined);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(0.2f, 0.2f, 0.2f, 0.8f);
+        shapeRenderer.rect(10, GameConfig.VIEWPORT_HEIGHT - 30, 104, 14);
+        if (player.currentStamina > 30) {
+            shapeRenderer.setColor(0f, 0.8f, 0f, 1f);
+        } else {
+            shapeRenderer.setColor(0.8f, 0f, 0f, 1f);
+        }
+        float barWidth = (player.currentStamina / player.maxStamina) * 100f;
+        shapeRenderer.rect(12, GameConfig.VIEWPORT_HEIGHT - 28, barWidth, 10);
+        shapeRenderer.end();
+
+        viewport.apply();
+>>>>>>> Stashed changes
     }
 
     @Override

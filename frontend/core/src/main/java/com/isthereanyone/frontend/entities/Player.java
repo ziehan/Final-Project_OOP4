@@ -9,7 +9,23 @@ import com.isthereanyone.frontend.managers.MyAssetManager;
 
 public class Player {
     public Vector2 position;
+<<<<<<< Updated upstream
     private float speed = 100f;
+=======
+
+    private static final float WALK_SPEED = 80f;
+    private static final float RUN_SPEED = 140f;
+
+    public float maxStamina = 100f;
+    public float currentStamina = 100f;
+    private float staminaDrain = 30f;
+    private float staminaRegen = 15f;
+
+    private boolean isExhausted = false;
+    private float regenTimer = 0f;
+    private final float REGEN_DELAY = 1.0f;
+
+>>>>>>> Stashed changes
     private Animation<TextureRegion> walkDown, walkUp, walkLeft, walkRight;
     private Animation<TextureRegion> currentAnimation;
     private float stateTime;
