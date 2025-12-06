@@ -4,14 +4,10 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.isthereanyone.frontend.config.GameConfig;
 import com.isthereanyone.frontend.entities.Player;
@@ -19,6 +15,7 @@ import com.isthereanyone.frontend.entities.ghost.Ghost;
 import com.isthereanyone.frontend.entities.tasks.BaseTask;
 import com.isthereanyone.frontend.entities.tasks.TaskFactory;
 import com.isthereanyone.frontend.input.InputHandler;
+import com.isthereanyone.frontend.managers.LightingSystem;
 import com.isthereanyone.frontend.managers.ScreenManager;
 import com.isthereanyone.frontend.observer.EventManager;
 
@@ -27,16 +24,19 @@ public class PlayScreen extends BaseScreen {
     private ShapeRenderer shapeRenderer;
     private Player player;
     private Ghost ghost;
-    private InputHandler inputHandler;
     private Array<BaseTask> tasks;
-    private FrameBuffer lightBuffer;
-    private TextureRegion lightBufferRegion;
-    private Texture lightTexture;
+    private InputHandler inputHandler;
+    private LightingSystem lightingSystem;
+    private GameHUD gameHUD;
     private SpriteBatch uiBatch;
     private Viewport uiViewport;
 
     public PlayScreen() {
         super();
+
+        camera = new OrthographicCamera();
+        viewport = new ExtendViewport(GameConfig.VIEWPORT_WIDTH, GameConfig.VIEWPORT_HEIGHT, camera);
+
         batch = new SpriteBatch();
         shapeRenderer = new ShapeRenderer();
         inputHandler = new InputHandler();
@@ -49,84 +49,46 @@ public class PlayScreen extends BaseScreen {
         tasks.add(TaskFactory.createTask("WIRE", 200, 200));
         tasks.add(TaskFactory.createTask("RITUAL", 500, 300));
 
-        OrthographicCamera uiCamera = new OrthographicCamera();
-        uiViewport = new FitViewport(GameConfig.VIEWPORT_WIDTH, GameConfig.VIEWPORT_HEIGHT, uiCamera);
         uiBatch = new SpriteBatch();
+        OrthographicCamera uiCamera = new OrthographicCamera();
+        uiViewport = new ExtendViewport(GameConfig.VIEWPORT_WIDTH, GameConfig.VIEWPORT_HEIGHT, uiCamera);
 
-        lightTexture = createGradientCircle(300);
-
-        lightBuffer = new FrameBuffer(Pixmap.Format.RGBA8888, (int)GameConfig.VIEWPORT_WIDTH, (int)GameConfig.VIEWPORT_HEIGHT, false);
-        lightBufferRegion = new TextureRegion(lightBuffer.getColorBufferTexture());
-        lightBufferRegion.flip(false, true);
-    }
-
-    private Texture createGradientCircle(int size) {
-        Pixmap pixmap = new Pixmap(size, size, Pixmap.Format.RGBA8888);
-
-        int radius = size / 2;
-        int centerX = size / 2;
-        int centerY = size / 2;
-
-        for (int x = 0; x < size; x++) {
-            for (int y = 0; y < size; y++) {
-                double dist = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
-
-                if (dist < radius) {
-                    float alpha = 1f - (float) (dist / radius);
-
-                    pixmap.setColor(1f, 1f, 1f, alpha);
-                    pixmap.drawPixel(x, y);
-                }
-            }
-        }
-
-        Texture t = new Texture(pixmap);
-        pixmap.dispose();
-        return t;
+        lightingSystem = new LightingSystem();
+        gameHUD = new GameHUD(uiBatch);
     }
 
     @Override
     public void resize(int width, int height) {
         viewport.update(width, height);
+
         uiViewport.update(width, height, true);
+
+        lightingSystem.resize((int)uiViewport.getWorldWidth(), (int)uiViewport.getWorldHeight());
+
+        gameHUD.resize(width, height);
     }
 
     @Override
     public void render(float delta) {
-        lightBuffer.begin();
+        lightingSystem.renderLightMap(batch, player, camera);
 
-        Gdx.gl.glClearColor(0, 0, 0, 0.95f);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-        batch.setProjectionMatrix(camera.combined);
-        batch.begin();
-
-        batch.setBlendFunction(GL20.GL_ZERO, GL20.GL_ONE_MINUS_SRC_ALPHA);
-
-        batch.draw(lightTexture,
-            player.position.x - lightTexture.getWidth()/2 + 16,
-            player.position.y - lightTexture.getHeight()/2 + 16);
-
-        batch.end();
-        batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-        lightBuffer.end();
-
-        Gdx.gl.glClearColor(0.1f, 0.1f, 0.1f, 1);
+        Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         camera.position.set(player.position.x + 16, player.position.y + 16, 0);
         camera.update();
 
         inputHandler.handleInput(player, delta);
+
         if (player.position.x < 0) player.position.x = 0;
-        if (player.position.x > 800 - 32) player.position.x = 800 - 32;
+        if (player.position.x > 1000) player.position.x = 1000; // Agak diperlebar
         if (player.position.y < 0) player.position.y = 0;
-        if (player.position.y > 600 - 32) player.position.y = 600 - 32;
+        if (player.position.y > 1000) player.position.y = 1000;
+
         ghost.update(player, delta);
 
         if (ghost.getPosition().dst(player.position) < 20f) {
             ScreenManager.getInstance().setScreen(new GameOverScreen());
-            return;
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
@@ -135,6 +97,10 @@ public class PlayScreen extends BaseScreen {
 
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+
+        shapeRenderer.setColor(0.1f, 0.1f, 0.1f, 1);
+        shapeRenderer.rect(-500, -500, 2000, 2000);
+
         for (BaseTask task : tasks) task.render(shapeRenderer);
         shapeRenderer.end();
 
@@ -144,24 +110,17 @@ public class PlayScreen extends BaseScreen {
         ghost.render(batch);
         batch.end();
 
-        uiBatch.setProjectionMatrix(uiViewport.getCamera().combined);
-        uiBatch.begin();
-        uiBatch.draw(lightBufferRegion, 0, 0, GameConfig.VIEWPORT_WIDTH, GameConfig.VIEWPORT_HEIGHT);
-        uiBatch.end();
+        lightingSystem.renderDarkness(uiBatch, uiViewport);
 
-        uiViewport.apply();
-        shapeRenderer.setProjectionMatrix(uiViewport.getCamera().combined);
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setColor(0.2f, 0.2f, 0.2f, 0.8f);
-        shapeRenderer.rect(10, GameConfig.VIEWPORT_HEIGHT - 30, 104, 14);
-        if (player.currentStamina > 30) {
-            shapeRenderer.setColor(0f, 0.8f, 0f, 1f);
-        } else {
-            shapeRenderer.setColor(0.8f, 0f, 0f, 1f);
+        int finishedCount = 0;
+        String prompt = null;
+        for (BaseTask task : tasks) {
+            if (task.isCompleted) finishedCount++;
+            else if (player.position.dst(task.getBounds().x, task.getBounds().y) < 40f) {
+                prompt = "[E] Interact";
+            }
         }
-        float barWidth = (player.currentStamina / player.maxStamina) * 100f;
-        shapeRenderer.rect(12, GameConfig.VIEWPORT_HEIGHT - 28, barWidth, 10);
-        shapeRenderer.end();
+        gameHUD.render(player, finishedCount, tasks.size, prompt);
 
         viewport.apply();
     }
@@ -171,7 +130,7 @@ public class PlayScreen extends BaseScreen {
         batch.dispose();
         shapeRenderer.dispose();
         uiBatch.dispose();
-        lightTexture.dispose();
-        lightBuffer.dispose();
+        lightingSystem.dispose();
+        gameHUD.dispose();
     }
 }

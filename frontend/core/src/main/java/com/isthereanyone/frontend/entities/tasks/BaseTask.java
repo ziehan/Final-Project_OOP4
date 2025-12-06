@@ -8,7 +8,7 @@ import com.isthereanyone.frontend.observer.EventManager;
 
 public abstract class BaseTask {
     protected Rectangle bounds;
-    protected boolean isCompleted = false;
+    public boolean isCompleted = false;
     protected Color debugColor = Color.BLUE;
 
     public BaseTask(float x, float y) {
@@ -39,4 +39,9 @@ public abstract class BaseTask {
         shapeRenderer.setColor(debugColor);
         shapeRenderer.rect(bounds.x, bounds.y, bounds.width, bounds.height);
     }
+
+    public Rectangle getBounds() {
+        return bounds;
+    }
 }
+
