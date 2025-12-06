@@ -3,24 +3,30 @@ package com.isthereanyone.frontend.entities.ghost.strategies;
 import com.isthereanyone.frontend.entities.Player;
 import com.isthereanyone.frontend.entities.ghost.Ghost;
 
-public class PatrolStrategy implements GhostStrategy{
-    private float timer = 0f;
-    private int moveDir = 0;
+public class PatrolStrategy implements GhostStrategy {
+    private float timer = 0;
+    private int moveDirX = 1;
+
+    private static final float DETECTION_RADIUS = 150f;
 
     @Override
     public void executeBehavior(Ghost ghost, Player player, float delta) {
-        ghost.position.x += 30f * moveDir * delta;
+        float patrolSpeed = ghost.getSpeed() * 0.4f;
+
+        ghost.getPosition().x += moveDirX * patrolSpeed * delta;
+        ghost.updateAnimationTime(delta);
 
         timer += delta;
-        if(timer > 2f){
-            moveDir *= -1;
+        if (timer > 3f) {
+            moveDirX *= -1;
             timer = 0;
         }
 
-        float distance = ghost.position.dst(player.position);
-        if(distance < 100f){
-            System.out.println("PLAYER SPOTTED! SWITCHING TO CHASE!");
-            ghost.setCurrentStrategy(new ChaseStartegy());
+        float distance = ghost.getPosition().dst(player.position);
+
+        if (distance < DETECTION_RADIUS) {
+            System.out.println("PLAYER DITEMUKAN! GANTI KE CHASE!");
+            ghost.setStrategy(new ChaseStrategy());
         }
     }
 }
