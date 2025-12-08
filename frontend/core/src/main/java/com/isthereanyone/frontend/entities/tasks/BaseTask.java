@@ -19,6 +19,7 @@ public abstract class BaseTask {
 
     public final void interact(Player player) {
         if (isCompleted) return;
+
         if (bounds.overlaps(new Rectangle(player.position.x, player.position.y, 32, 32))) {
             startTask();
             executeLogic();
@@ -44,11 +45,7 @@ public abstract class BaseTask {
     public Rectangle getBounds() {
         return bounds;
     }
-<<<<<<< Updated upstream
-=======
 
     public abstract boolean updateMinigame(float delta, Viewport viewport, Player player);
     public abstract void renderMinigame(SpriteBatch batch, ShapeRenderer shape, Viewport viewport);
->>>>>>> Stashed changes
 }
-
