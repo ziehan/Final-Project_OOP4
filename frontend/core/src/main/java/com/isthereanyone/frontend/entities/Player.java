@@ -5,14 +5,13 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
+import com.isthereanyone.frontend.components.Inventory;
 import com.isthereanyone.frontend.managers.MyAssetManager;
 
 public class Player {
     public Vector2 position;
-
     private static final float WALK_SPEED = 80f;
     private static final float RUN_SPEED = 140f;
-
     public float maxStamina = 100f;
     public float currentStamina = 100f;
     private float staminaDrain = 30f;
@@ -25,9 +24,11 @@ public class Player {
     private float stateTime;
     private boolean isMoving = false;
     private boolean isRunning = false;
+    public Inventory inventory;
 
     public Player(float startX, float startY) {
         position = new Vector2(startX, startY);
+        inventory = new Inventory();
         Texture sheet = MyAssetManager.getInstance().get("she.png");
         TextureRegion[][] tmp = TextureRegion.split(sheet, 32, 32);
 

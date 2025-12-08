@@ -1,8 +1,10 @@
 package com.isthereanyone.frontend.entities.tasks;
 
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.viewport.Viewport;
 import com.isthereanyone.frontend.entities.Player;
 import com.isthereanyone.frontend.observer.EventManager;
 
@@ -20,7 +22,6 @@ public abstract class BaseTask {
         if (bounds.overlaps(new Rectangle(player.position.x, player.position.y, 32, 32))) {
             startTask();
             executeLogic();
-            completeTask();
         }
     }
 
@@ -43,5 +44,11 @@ public abstract class BaseTask {
     public Rectangle getBounds() {
         return bounds;
     }
+<<<<<<< Updated upstream
+=======
+
+    public abstract boolean updateMinigame(float delta, Viewport viewport, Player player);
+    public abstract void renderMinigame(SpriteBatch batch, ShapeRenderer shape, Viewport viewport);
+>>>>>>> Stashed changes
 }
 
