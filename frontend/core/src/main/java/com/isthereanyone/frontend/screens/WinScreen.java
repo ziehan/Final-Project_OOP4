@@ -47,12 +47,12 @@ public class WinScreen extends BaseScreen {
         GlyphLayout layout = new GlyphLayout(titleFont, "YOU ESCAPED!");
         titleFont.draw(batch, layout,
             (GameConfig.VIEWPORT_WIDTH - layout.width) / 2,
-            (GameConfig.VIEWPORT_HEIGHT / 2) + 50);
+            (GameConfig.VIEWPORT_HEIGHT / 2) + 100);
 
         layout.setText(subFont, "Press ENTER to Play Again");
         subFont.draw(batch, layout,
             (GameConfig.VIEWPORT_WIDTH - layout.width) / 2,
-            (GameConfig.VIEWPORT_HEIGHT / 2) - 20);
+            (GameConfig.VIEWPORT_HEIGHT / 2));
 
         batch.end();
 
