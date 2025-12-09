@@ -59,4 +59,10 @@ public class Ghost implements GameObserver {
         speedMultiplier += 0.2f;
         System.out.println("GHOST: GRRR!! SPEED MENINGKAT JADI " + (speed * speedMultiplier));
     }
+
+    @Override
+    public void onAllTasksCompleted() {
+        System.out.println("GHOST: PINTU TERBUKA?! AKU AKAN MEMBUNUHMU!");
+        speedMultiplier = 2.5f;
+    }
 }

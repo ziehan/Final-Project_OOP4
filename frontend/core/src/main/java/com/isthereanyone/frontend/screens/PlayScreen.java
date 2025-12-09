@@ -23,7 +23,7 @@ import com.isthereanyone.frontend.entities.tasks.TaskFactory;
 import com.isthereanyone.frontend.input.InputHandler;
 import com.isthereanyone.frontend.managers.LightingSystem;
 import com.isthereanyone.frontend.managers.ScreenManager;
-import com.isthereanyone.frontend.observer.EventManager;
+import com.isthereanyone.frontend.managers.EventManager;
 
 public class PlayScreen extends BaseScreen {
     private SpriteBatch batch;
