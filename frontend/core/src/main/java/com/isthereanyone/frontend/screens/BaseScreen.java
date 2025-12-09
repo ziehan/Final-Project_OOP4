@@ -7,8 +7,8 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.isthereanyone.frontend.config.GameConfig;
 
 public class BaseScreen implements Screen {
-    protected OrthographicCamera camera;
-    protected Viewport viewport;
+    public OrthographicCamera camera;
+    public Viewport viewport;
 
     public BaseScreen(){
         camera = new OrthographicCamera();
