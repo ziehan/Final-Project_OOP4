@@ -61,7 +61,7 @@ public class PlayScreen extends BaseScreen {
         tasks = new Array<>();
         tasks.add(TaskFactory.createTask("STONE", 200, 200));
         tasks.add(TaskFactory.createTask("GENERATOR", 500, 300));
-        tasks.add(TaskFactory.createTask("RITUAL", 800, 500));
+        tasks.add(TaskFactory.createTask("RITUAL", 100, 300));
 
         uiBatch = new SpriteBatch();
         OrthographicCamera uiCamera = new OrthographicCamera();
