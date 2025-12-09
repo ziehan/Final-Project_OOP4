@@ -6,7 +6,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.isthereanyone.frontend.entities.Player;
-import com.isthereanyone.frontend.observer.EventManager;
+import com.isthereanyone.frontend.managers.EventManager;
 
 public abstract class BaseTask {
     protected Rectangle bounds;
