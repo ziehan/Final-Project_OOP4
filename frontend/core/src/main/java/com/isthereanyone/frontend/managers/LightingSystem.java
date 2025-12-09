@@ -27,6 +27,7 @@ public class LightingSystem {
     }
 
     public void resize(int width, int height) {
+        if (width <= 0 || height <= 0) return;
         if (lightBuffer != null) lightBuffer.dispose();
 
         lightBuffer = new FrameBuffer(Pixmap.Format.RGBA8888, width, height, false);
