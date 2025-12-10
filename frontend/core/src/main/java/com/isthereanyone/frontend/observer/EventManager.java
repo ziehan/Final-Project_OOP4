@@ -1,6 +1,4 @@
-package com.isthereanyone.frontend.managers;
-
-import com.isthereanyone.frontend.observer.GameObserver;
+package com.isthereanyone.frontend.observer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +7,6 @@ public class EventManager {
     private static EventManager instance;
     private List<GameObserver> observers;
 
-    // Counter Global
     private int finishedTaskCount = 0;
     private final int TOTAL_TASKS_REQUIRED = 3;
 
@@ -46,6 +43,12 @@ public class EventManager {
             if (finishedTaskCount >= TOTAL_TASKS_REQUIRED) {
                 observer.onAllTasksCompleted();
             }
+        }
+    }
+
+    public void notifySoundEmitted(float x, float y, float radius){
+        for(GameObserver observer : observers){
+            observer.onSoundEmitted(x, y, radius);
         }
     }
 

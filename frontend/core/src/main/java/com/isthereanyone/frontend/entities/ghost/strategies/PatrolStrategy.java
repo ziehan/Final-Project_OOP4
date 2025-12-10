@@ -25,7 +25,7 @@ public class PatrolStrategy implements GhostStrategy {
         float distance = ghost.getPosition().dst(player.position);
 
         if (distance < DETECTION_RADIUS) {
-            System.out.println("PLAYER DITEMUKAN! GANTI KE CHASE!");
+            System.out.println("GHOST: Player found, change to chase");
             ghost.setStrategy(new ChaseStrategy());
         }
     }

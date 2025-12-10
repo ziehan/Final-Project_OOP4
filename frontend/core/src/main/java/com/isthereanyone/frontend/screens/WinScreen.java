@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.isthereanyone.frontend.config.GameConfig;
 import com.isthereanyone.frontend.managers.ScreenManager;
+import com.isthereanyone.frontend.observer.EventManager;
 
 public class WinScreen extends BaseScreen {
     private SpriteBatch batch;
@@ -57,7 +58,7 @@ public class WinScreen extends BaseScreen {
         batch.end();
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
-            com.isthereanyone.frontend.managers.EventManager.getInstance();
+            EventManager.getInstance();
             ScreenManager.getInstance().setScreen(new MainMenuScreen());
         }
     }
