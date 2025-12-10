@@ -21,6 +21,17 @@ public class MyAssetManager implements Disposable {
 
     public void loadAssets(){
         manager.load("she.png", Texture.class);
+
+        manager.load("Unarmed_Idle_with_shadow.png", Texture.class);
+        manager.load("Unarmed_Walk_with_shadow.png", Texture.class);
+        manager.load("Unarmed_Run_with_shadow.png", Texture.class);
+        manager.load("Unarmed_Hurt_with_shadow.png", Texture.class);
+        manager.load("Unarmed_Death_with_shadow.png", Texture.class);
+
+        manager.load("Vampires3_Idle_with_shadow.png", Texture.class);
+        manager.load("Vampires3_Walk_with_shadow.png", Texture.class);
+        manager.load("Vampires3_Run_with_shadow.png", Texture.class);
+        manager.load("Vampires3_Attack_with_shadow.png", Texture.class);
     }
 
     public void finishLoading(){

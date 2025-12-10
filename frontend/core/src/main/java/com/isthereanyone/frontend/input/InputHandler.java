@@ -31,7 +31,7 @@ public class InputHandler {
         if (Gdx.input.isKeyPressed(Input.Keys.S)) direction.y = -1;
         if (Gdx.input.isKeyPressed(Input.Keys.A)) direction.x = -1;
         if (Gdx.input.isKeyPressed(Input.Keys.D)) direction.x = 1;
-        player.setRunning(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT));
+        player.setRunningRequest(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT));
 
         if (direction.len2() > 0) {
             direction.nor();
