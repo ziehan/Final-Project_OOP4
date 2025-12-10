@@ -13,7 +13,6 @@ public class ChaseStrategy implements GhostStrategy {
         direction.set(player.position).sub(ghost.getPosition()).nor();
 
         ghost.getPosition().mulAdd(direction, ghost.getSpeed() * delta);
-        ghost.updateAnimationTime(delta);
 
         float distance = ghost.getPosition().dst(player.position);
 
