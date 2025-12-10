@@ -14,7 +14,6 @@ public class PatrolStrategy implements GhostStrategy {
         float patrolSpeed = ghost.getSpeed() * 0.4f;
 
         ghost.getPosition().x += moveDirX * patrolSpeed * delta;
-        ghost.updateAnimationTime(delta);
 
         timer += delta;
         if (timer > 3f) {

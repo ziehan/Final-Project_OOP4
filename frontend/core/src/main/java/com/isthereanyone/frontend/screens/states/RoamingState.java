@@ -20,9 +20,7 @@ public class RoamingState implements PlayState {
 
         if (player.isDead) {
             player.update(delta);
-
             screen.getWorld().ghost.update(player, delta);
-
             deathTimer += delta;
 
             screen.camera.position.set(player.position.x + 16, player.position.y + 16, 0);
@@ -57,8 +55,14 @@ public class RoamingState implements PlayState {
         float dist = screen.getWorld().ghost.getPosition().dst(player.position);
 
         if (dist < 30f && !screen.getWorld().ghost.isCoolingDown()) {
-            player.takeDamage();
             screen.getWorld().ghost.triggerAttackCooldown();
+        }
+
+        if (screen.getWorld().ghost.shouldDealDamage()) {
+            if (dist < 50f) {
+                player.takeDamage();
+            }
+            screen.getWorld().ghost.confirmDamageDealt();
         }
     }
 
@@ -72,6 +76,7 @@ public class RoamingState implements PlayState {
         screen.uiViewport.setScreenBounds(0, 0, screenW, screenH);
 
         screen.lightingSystem.renderDarkness(screen.uiBatch, screen.uiViewport);
+
         screen.renderHUD();
     }
 }
