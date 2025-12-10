@@ -18,8 +18,8 @@ public class ChaseStrategy implements GhostStrategy {
         float distance = ghost.getPosition().dst(player.position);
 
         if (distance > ESCAPE_RADIUS) {
-            System.out.println("Player hilang... Kembali patroli.");
-            ghost.setStrategy(new PatrolStrategy());
+            System.out.println("GHOST: Player is missing, back to patrol.");
+            ghost.revertToPatrol();
         }
     }
 }

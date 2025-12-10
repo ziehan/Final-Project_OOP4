@@ -47,6 +47,11 @@ public class InputHandler {
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)) selectSlot1.execute(player, delta);
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) selectSlot2.execute(player, delta);
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)) selectSlot3.execute(player, delta);
+
+        if (player.isRunning() && direction.len2() > 0) {
+            com.isthereanyone.frontend.observer.EventManager.getInstance()
+                .notifySoundEmitted(player.position.x, player.position.y, 400f);
+        }
     }
 
     private String getDirectionName(Vector2 dir) {

@@ -12,7 +12,7 @@ import com.isthereanyone.frontend.entities.items.ItemType;
 import com.isthereanyone.frontend.entities.items.RitualItem;
 import com.isthereanyone.frontend.entities.tasks.BaseTask;
 import com.isthereanyone.frontend.entities.tasks.TaskFactory;
-import com.isthereanyone.frontend.managers.EventManager;
+import com.isthereanyone.frontend.observer.EventManager;
 
 public class GameWorld {
     public Player player;
@@ -23,7 +23,7 @@ public class GameWorld {
 
     public GameWorld() {
         player = new Player(100, 100);
-        ghost = new Ghost(400, 100);
+        ghost = new Ghost(900, 800);
         EventManager.getInstance().addObserver(ghost);
 
         tasks = new Array<>();
@@ -34,6 +34,15 @@ public class GameWorld {
         gate = new Gate(900, 500);
 
         spawnItems();
+
+        Array<Vector2> ghostWaypoints = new Array<>();
+
+        for (BaseTask task : tasks) {
+            ghostWaypoints.add(new Vector2(task.getBounds().x, task.getBounds().y));
+        }
+        ghostWaypoints.add(new Vector2(gate.getBounds().x, gate.getBounds().y));
+
+        ghost.setPatrolPoints(ghostWaypoints);
     }
 
     private void spawnItems() {

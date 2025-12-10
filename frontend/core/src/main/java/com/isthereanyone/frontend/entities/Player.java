@@ -1,5 +1,6 @@
 package com.isthereanyone.frontend.entities;
 
+import com.badlogic.gdx.graphics.Color; // Tambah Import ini
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -23,7 +24,9 @@ public class Player {
     private Animation<TextureRegion> currentAnimation;
     private float stateTime;
     private boolean isMoving = false;
+
     private boolean isRunning = false;
+
     public Inventory inventory;
 
     public Player(float startX, float startY) {
@@ -85,6 +88,10 @@ public class Player {
         this.isRunning = running;
     }
 
+    public boolean isRunning() {
+        return this.isRunning;
+    }
+
     public void updateIdle(float delta) {
         isMoving = false;
 
@@ -113,6 +120,11 @@ public class Player {
     }
 
     public void render(SpriteBatch batch) {
+        // --- PENGAMAN WARNA ---
+        // Pastikan kuas cat kembali putih sebelum menggambar player
+        batch.setColor(Color.WHITE);
+        // ----------------------
+
         TextureRegion currentFrame;
         if (isMoving) {
             currentFrame = currentAnimation.getKeyFrame(stateTime, true);

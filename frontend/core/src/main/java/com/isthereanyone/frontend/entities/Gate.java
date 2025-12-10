@@ -3,7 +3,7 @@ package com.isthereanyone.frontend.entities;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
-import com.isthereanyone.frontend.managers.EventManager;
+import com.isthereanyone.frontend.observer.EventManager;
 import com.isthereanyone.frontend.managers.ScreenManager;
 import com.isthereanyone.frontend.observer.GameObserver;
 import com.isthereanyone.frontend.screens.WinScreen;
@@ -24,6 +24,11 @@ public class Gate implements GameObserver {
     public void onAllTasksCompleted() {
         isLocked = false;
         System.out.println("GATE: *KLAK* Suara rantai jatuh... Gerbang terbuka!");
+    }
+
+    @Override
+    public void onSoundEmitted(float x, float y, float radius) {
+
     }
 
     public void interact() {
