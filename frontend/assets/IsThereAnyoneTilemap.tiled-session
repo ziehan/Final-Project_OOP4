@@ -1,0 +1,51 @@
+{
+    "activeFile": "Tilemap.tmx",
+    "expandedProjectPaths": [
+        "."
+    ],
+    "file.lastUsedOpenFilter": "All Files (*)",
+    "fileStates": {
+        "1-export.tsx": {
+            "scaleInDock": 1
+        },
+        "2-export.tsx": {
+            "scaleInDock": 1
+        },
+        "3-export.tsx": {
+            "scaleInDock": 1
+        },
+        "4-export.tsx": {
+            "scaleInDock": 1
+        },
+        "FieldsTilesetDarken.tsx": {
+            "scaleInDock": 1
+        },
+        "Tilemap.tmx": {
+            "scale": 0.33725,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 1509.2661230541141,
+                "y": 1421.7939214232765
+            }
+        },
+        "Trees_animation.tsx": {
+            "scaleInDock": 1
+        },
+        "exterior-export.tsx": {
+            "scaleInDock": 1
+        },
+        "house_details.tsx": {
+            "scaleInDock": 1
+        },
+        "walls_and_floor.tsx": {
+            "scaleInDock": 1
+        }
+    },
+    "openFiles": [
+        "Tilemap.tmx"
+    ],
+    "project": "IsThereAnyoneTilemap.tiled-project",
+    "recentFiles": [
+        "Tilemap.tmx"
+    ]
+}

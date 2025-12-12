@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -24,12 +25,13 @@ public class PlayScreen extends BaseScreen {
     public LightingSystem lightingSystem;
     public GameHUD gameHUD;
 
+    public OrthogonalTiledMapRenderer mapRenderer;
+
     public Viewport uiViewport;
     public Viewport puzzleViewport;
     public SpriteBatch uiBatch;
 
     private GameWorld world;
-
     private PlayState currentState;
 
     public PlayScreen() {
@@ -42,6 +44,8 @@ public class PlayScreen extends BaseScreen {
         shapeRenderer = new ShapeRenderer();
 
         world = new GameWorld();
+
+        mapRenderer = new OrthogonalTiledMapRenderer(world.map, 1f);
 
         uiBatch = new SpriteBatch();
         OrthographicCamera uiCamera = new OrthographicCamera();
@@ -68,27 +72,18 @@ public class PlayScreen extends BaseScreen {
 
     @Override
     public void resize(int width, int height) {
+        viewport.update(width, height);
         lightingSystem.resize((int)uiViewport.getWorldWidth(), (int)uiViewport.getWorldHeight());
         gameHUD.resize(width, height);
     }
 
     @Override
     public void render(float delta) {
-        lightingSystem.renderLightMap(batch, world.player, camera);
-
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         currentState.update(delta);
         currentState.render();
-    }
-
-
-    public void renderWorld() {
-        batch.setProjectionMatrix(camera.combined);
-        shapeRenderer.setProjectionMatrix(camera.combined);
-
-        world.render(batch, shapeRenderer);
     }
 
     public void renderHUD() {
@@ -114,6 +109,8 @@ public class PlayScreen extends BaseScreen {
         gameHUD.render(world.player, finishedCount, world.tasks.size, prompt);
     }
 
+    public void renderWorld() {}
+
     @Override
     public void dispose() {
         batch.dispose();
@@ -122,5 +119,6 @@ public class PlayScreen extends BaseScreen {
         lightingSystem.dispose();
         gameHUD.dispose();
         world.dispose();
+        if (mapRenderer != null) mapRenderer.dispose();
     }
 }
