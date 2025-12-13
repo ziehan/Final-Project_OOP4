@@ -62,7 +62,6 @@ public class RoamingState implements PlayState {
     @Override
     public void render() {
         screen.mapRenderer.render(floorLayers);
-        screen.mapRenderer.render(wallLayers);
 
         screen.batch.setProjectionMatrix(screen.camera.combined);
         screen.batch.begin();
@@ -71,33 +70,13 @@ public class RoamingState implements PlayState {
 
         Player player = screen.getWorld().player;
         renderQueue.add(new DepthObject(player.position.y, () -> player.render(screen.batch)));
-
         renderQueue.add(new DepthObject(screen.getWorld().ghost.getPosition().y, () -> screen.getWorld().ghost.render(screen.batch)));
 
-        MapLayer detailsLayer = screen.getWorld().map.getLayers().get("Details");
-        if (detailsLayer != null) {
-            for (MapObject object : detailsLayer.getObjects()) {
-                if (object instanceof TiledMapTileMapObject) {
-                    TiledMapTileMapObject tileObj = (TiledMapTileMapObject) object;
-                    if (tileObj.getTile() != null) {
-                        TextureRegion region = tileObj.getTile().getTextureRegion();
+        processLayerForSorting("Details", 5.0f);
 
-                        float realX = tileObj.getX();
-                        float realY = tileObj.getY();
-
-                        float offset = 15.0f;
-                        float sortY = realY + offset;
-
-                        renderQueue.add(new DepthObject(sortY, () -> {
-                            screen.batch.draw(region, realX, realY);
-                        }));
-                    }
-                }
-            }
-        }
+        processLayerForSorting("Collidables", 0.0f);
 
         renderQueue.sort(depthComparator);
-
         for (DepthObject obj : renderQueue) {
             obj.drawRunnable.run();
         }
@@ -106,11 +85,47 @@ public class RoamingState implements PlayState {
 
         screen.mapRenderer.render(foregroundLayers);
 
-        if (debugMode) {
-            renderDebugCollision();
+        if (debugMode) renderDebugCollision();
+        renderUIAndLighting();
+    }
+
+    private void processLayerForSorting(String layerName, float offset) {
+        MapLayer layer = screen.getWorld().map.getLayers().get(layerName);
+        if (layer == null) return;
+
+        for (MapObject object : layer.getObjects()) {
+            if (object instanceof TiledMapTileMapObject) {
+                TiledMapTileMapObject tileObj = (TiledMapTileMapObject) object;
+                if (tileObj.getTile() != null) {
+                    TextureRegion region = tileObj.getTile().getTextureRegion();
+                    float sortY = tileObj.getY() + offset;
+
+                    renderQueue.add(new DepthObject(sortY, () -> {
+                        screen.batch.draw(region, tileObj.getX(), tileObj.getY());
+                    }));
+                }
+            }
         }
 
-        renderUIAndLighting();
+        if (layer instanceof com.badlogic.gdx.maps.tiled.TiledMapTileLayer) {
+            com.badlogic.gdx.maps.tiled.TiledMapTileLayer tileLayer = (com.badlogic.gdx.maps.tiled.TiledMapTileLayer) layer;
+            for (int x = 0; x < tileLayer.getWidth(); x++) {
+                for (int y = 0; y < tileLayer.getHeight(); y++) {
+                    com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell cell = tileLayer.getCell(x, y);
+                    if (cell != null && cell.getTile() != null) {
+                        TextureRegion region = cell.getTile().getTextureRegion();
+                        float worldX = x * tileLayer.getTileWidth();
+                        float worldY = y * tileLayer.getTileHeight();
+
+                        float sortY = worldY + offset;
+
+                        renderQueue.add(new DepthObject(sortY, () -> {
+                            screen.batch.draw(region, worldX, worldY);
+                        }));
+                    }
+                }
+            }
+        }
     }
 
     private static class DepthObject {
@@ -167,7 +182,6 @@ public class RoamingState implements PlayState {
         if (player.position.y < 0) player.position.y = 0;
         if (player.position.y > mapSize - 32) player.position.y = mapSize - 32;
 
-        // Collision Check
         Rectangle playerRect = new Rectangle(player.position.x + 10, player.position.y, 14, 10);
         for (Rectangle wall : screen.getWorld().walls) {
             if (playerRect.overlaps(wall)) {
