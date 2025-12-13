@@ -1,6 +1,7 @@
 package com.isthereanyone.frontend.screens.states;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.MapLayer;
@@ -21,9 +22,12 @@ import java.util.Comparator;
 public class RoamingState implements PlayState {
     private final PlayScreen screen;
     private float deathTimer = 0f;
+    private boolean debugMode = false;
 
     private final int[] floorLayers = { 0, 1 };
+
     private final int[] wallLayers = { 3 };
+
     private final int[] foregroundLayers = { 4 };
 
     private Array<DepthObject> renderQueue;
@@ -38,6 +42,10 @@ public class RoamingState implements PlayState {
     @Override
     public void update(float delta) {
         Player player = screen.getWorld().player;
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
+            debugMode = !debugMode;
+        }
 
         if (player.isDead) {
             handleDeath(delta, player);
@@ -54,6 +62,7 @@ public class RoamingState implements PlayState {
     @Override
     public void render() {
         screen.mapRenderer.render(floorLayers);
+        screen.mapRenderer.render(wallLayers);
 
         screen.batch.setProjectionMatrix(screen.camera.combined);
         screen.batch.begin();
@@ -62,6 +71,7 @@ public class RoamingState implements PlayState {
 
         Player player = screen.getWorld().player;
         renderQueue.add(new DepthObject(player.position.y, () -> player.render(screen.batch)));
+
         renderQueue.add(new DepthObject(screen.getWorld().ghost.getPosition().y, () -> screen.getWorld().ghost.render(screen.batch)));
 
         MapLayer detailsLayer = screen.getWorld().map.getLayers().get("Details");
@@ -71,37 +81,15 @@ public class RoamingState implements PlayState {
                     TiledMapTileMapObject tileObj = (TiledMapTileMapObject) object;
                     if (tileObj.getTile() != null) {
                         TextureRegion region = tileObj.getTile().getTextureRegion();
-                        float objectY = tileObj.getY();
-                        renderQueue.add(new DepthObject(objectY, () -> {
-                            screen.batch.draw(region, tileObj.getX(), tileObj.getY());
-                        }));
-                    }
-                }
-            }
-        }
 
-        MapLayer collisionLayer = screen.getWorld().map.getLayers().get("Collidables");
+                        float realX = tileObj.getX();
+                        float realY = tileObj.getY();
 
-        if (collisionLayer instanceof com.badlogic.gdx.maps.tiled.TiledMapTileLayer) {
-            com.badlogic.gdx.maps.tiled.TiledMapTileLayer tileLayer = (com.badlogic.gdx.maps.tiled.TiledMapTileLayer) collisionLayer;
+                        float offset = 15.0f;
+                        float sortY = realY + offset;
 
-            int colWidth = tileLayer.getWidth();
-            int colHeight = tileLayer.getHeight();
-            float tileW = tileLayer.getTileWidth();
-            float tileH = tileLayer.getTileHeight();
-
-            for (int x = 0; x < colWidth; x++) {
-                for (int y = 0; y < colHeight; y++) {
-                    com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell cell = tileLayer.getCell(x, y);
-
-                    if (cell != null && cell.getTile() != null) {
-                        TextureRegion region = cell.getTile().getTextureRegion();
-
-                        float worldX = x * tileW;
-                        float worldY = y * tileH;
-
-                        renderQueue.add(new DepthObject(worldY, () -> {
-                            screen.batch.draw(region, worldX, worldY);
+                        renderQueue.add(new DepthObject(sortY, () -> {
+                            screen.batch.draw(region, realX, realY);
                         }));
                     }
                 }
@@ -117,6 +105,10 @@ public class RoamingState implements PlayState {
         screen.batch.end();
 
         screen.mapRenderer.render(foregroundLayers);
+
+        if (debugMode) {
+            renderDebugCollision();
+        }
 
         renderUIAndLighting();
     }
@@ -175,6 +167,7 @@ public class RoamingState implements PlayState {
         if (player.position.y < 0) player.position.y = 0;
         if (player.position.y > mapSize - 32) player.position.y = mapSize - 32;
 
+        // Collision Check
         Rectangle playerRect = new Rectangle(player.position.x + 10, player.position.y, 14, 10);
         for (Rectangle wall : screen.getWorld().walls) {
             if (playerRect.overlaps(wall)) {
@@ -195,6 +188,16 @@ public class RoamingState implements PlayState {
             screen.getWorld().ghost.confirmDamageDealt();
         }
         AnimatedTiledMapTile.updateAnimationBaseTime();
+    }
+
+    private void renderDebugCollision() {
+        screen.shapeRenderer.setProjectionMatrix(screen.camera.combined);
+        screen.shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        screen.shapeRenderer.setColor(1, 0, 0, 1);
+        for (Rectangle wall : screen.getWorld().walls) {
+            screen.shapeRenderer.rect(wall.x, wall.y, wall.width, wall.height);
+        }
+        screen.shapeRenderer.end();
     }
 
     private void renderUIAndLighting() {

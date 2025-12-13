@@ -21,18 +21,22 @@
             "scaleInDock": 1
         },
         "Tilemap.tmx": {
-            "scale": 0.33725,
-            "selectedLayer": 0,
+            "expandedGroupLayers": [
+                11
+            ],
+            "scale": 16,
+            "selectedLayer": 5,
             "viewCenter": {
-                "x": 1509.2661230541141,
-                "y": 1421.7939214232765
+                "x": 144.25,
+                "y": 1868.46875
             }
         },
         "Trees_animation.tsx": {
             "scaleInDock": 1
         },
         "exterior-export.tsx": {
-            "scaleInDock": 1
+            "scaleInDock": 1,
+            "scaleInEditor": 1.5
         },
         "house_details.tsx": {
             "scaleInDock": 1
@@ -42,10 +46,12 @@
         }
     },
     "openFiles": [
-        "Tilemap.tmx"
+        "Tilemap.tmx",
+        "exterior-export.tsx"
     ],
     "project": "IsThereAnyoneTilemap.tiled-project",
     "recentFiles": [
+        "exterior-export.tsx",
         "Tilemap.tmx"
     ]
 }
