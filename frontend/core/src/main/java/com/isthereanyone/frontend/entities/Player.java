@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.isthereanyone.frontend.components.Inventory;
 import com.isthereanyone.frontend.managers.MyAssetManager;
@@ -220,5 +221,10 @@ public class Player {
         batch.setColor(Color.WHITE);
         TextureRegion frame = currentAnimation.getKeyFrame(stateTime);
         batch.draw(frame, position.x - 16, position.y - 15);
+    }
+
+    public Rectangle getBoundingRectangle() {
+        // x+10, width 14, height 10 (Sesuai logic tabrakan tembok di RoamingState)
+        return new Rectangle(position.x + 10, position.y, 14, 10);
     }
 }
