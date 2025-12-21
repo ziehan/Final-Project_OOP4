@@ -2,7 +2,7 @@
 nixPkgs = ["jdk17", "gradle"]
 
 [phases.build]
-cmds = ["./gradlew clean bootJar -x test"]
+cmds = ["chmod +x gradlew", "./gradlew clean bootJar -x test"]
 
 [start]
 cmd = "java -Dserver.port=$PORT -jar build/libs/app.jar"
