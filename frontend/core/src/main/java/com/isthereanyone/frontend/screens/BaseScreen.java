@@ -13,7 +13,8 @@ public class BaseScreen implements Screen {
     public BaseScreen(){
         camera = new OrthographicCamera();
         viewport = new FitViewport(GameConfig.VIEWPORT_WIDTH, GameConfig.VIEWPORT_HEIGHT, camera);
-        camera.position.set(GameConfig.VIEWPORT_WIDTH / 2, GameConfig.VIEWPORT_HEIGHT / 2, 0);
+        camera.position.set(GameConfig.VIEWPORT_WIDTH / 2f, GameConfig.VIEWPORT_HEIGHT / 2f, 0);
+        camera.update();
     }
 
     @Override
@@ -28,7 +29,9 @@ public class BaseScreen implements Screen {
 
     @Override
     public void resize(int width, int height) {
-        viewport.update(width, height);
+        viewport.update(width, height, true);
+        camera.position.set(GameConfig.VIEWPORT_WIDTH / 2f, GameConfig.VIEWPORT_HEIGHT / 2f, 0);
+        camera.update();
     }
 
     @Override
