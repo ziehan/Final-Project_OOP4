@@ -3,10 +3,6 @@ package com.isthereanyone.backend.entity;
 import java.io.Serializable;
 import java.util.Objects;
 
-/**
- * Composite Primary Key untuk GameSave Entity
- * Kombinasi user_id + slot_id sebagai primary key
- */
 public class GameSaveId implements Serializable {
 
     private String userId;
@@ -19,7 +15,6 @@ public class GameSaveId implements Serializable {
         this.slotId = slotId;
     }
 
-    // Getters and Setters
     public String getUserId() {
         return userId;
     }

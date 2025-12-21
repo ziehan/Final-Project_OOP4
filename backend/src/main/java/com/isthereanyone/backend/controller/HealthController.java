@@ -11,19 +11,11 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Health Check Controller
- * Untuk memastikan server berjalan dengan baik
- */
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = "*")
 public class HealthController {
 
-    /**
-     * GET /api/health
-     * Health check endpoint
-     */
     @GetMapping("/health")
     public ResponseEntity<ApiResponse<Map<String, Object>>> healthCheck() {
         Map<String, Object> health = new HashMap<>();
@@ -31,14 +23,9 @@ public class HealthController {
         health.put("service", "Is There Anyone - Game Backend");
         health.put("version", "1.0.0");
         health.put("timestamp", LocalDateTime.now());
-
         return ResponseEntity.ok(ApiResponse.success("Server is running", health));
     }
 
-    /**
-     * GET /api/ping
-     * Simple ping endpoint
-     */
     @GetMapping("/ping")
     public ResponseEntity<String> ping() {
         return ResponseEntity.ok("pong");

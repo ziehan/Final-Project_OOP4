@@ -44,6 +44,16 @@ Server akan berjalan di `http://localhost:8080`
 | GET | `/api/health` | Health check |
 | GET | `/api/ping` | Simple ping |
 
+### Authentication
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/signup` | Register user baru |
+| POST | `/api/auth/signin` | Login user |
+| GET | `/api/auth/check/username/{username}` | Cek username tersedia |
+| GET | `/api/auth/check/email/{email}` | Cek email tersedia |
+| GET | `/api/auth/user/{username}` | Get user info |
+
 ### Game Save
 
 | Method | Endpoint | Description |
@@ -59,7 +69,95 @@ Server akan berjalan di `http://localhost:8080`
 
 ## 📝 Request/Response Examples
 
-### Save Game
+### Authentication
+
+#### Signup (Register)
+
+**Request:**
+```http
+POST /api/auth/signup
+Content-Type: application/json
+
+{
+  "username": "player123",
+  "email": "player@example.com",
+  "password": "password123",
+  "displayName": "Player One"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Registrasi berhasil",
+  "data": {
+    "message": "Registrasi berhasil",
+    "user": {
+      "id": 1,
+      "username": "player123",
+      "email": "player@example.com",
+      "displayName": "Player One",
+      "createdAt": "2024-12-21T13:00:00"
+    }
+  },
+  "timestamp": "2024-12-21T13:00:00"
+}
+```
+
+#### Signin (Login)
+
+**Request:**
+```http
+POST /api/auth/signin
+Content-Type: application/json
+
+{
+  "usernameOrEmail": "player123",
+  "password": "password123"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Login berhasil",
+  "data": {
+    "message": "Login berhasil",
+    "user": {
+      "id": 1,
+      "username": "player123",
+      "email": "player@example.com",
+      "displayName": "Player One"
+    }
+  },
+  "timestamp": "2024-12-21T13:00:00"
+}
+```
+
+#### Check Username
+
+**Request:**
+```http
+GET /api/auth/check/username/player123
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Username sudah digunakan",
+  "data": true,
+  "timestamp": "2024-12-21T13:00:00"
+}
+```
+
+---
+
+### Game Save
+
+#### Save Game
 
 **Request:**
 ```http

@@ -3,10 +3,30 @@
 -- PostgreSQL (Neon Console)
 -- =============================================
 
--- Drop table jika sudah ada (untuk fresh start)
+-- Drop tables jika sudah ada (untuk fresh start)
 DROP TABLE IF EXISTS game_saves;
+DROP TABLE IF EXISTS users;
 
--- Create table game_saves
+-- =============================================
+-- Table: users
+-- =============================================
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    display_name VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Index untuk query by username dan email
+CREATE INDEX idx_users_username ON users(username);
+CREATE INDEX idx_users_email ON users(email);
+
+-- =============================================
+-- Table: game_saves
+-- =============================================
 CREATE TABLE game_saves (
     user_id VARCHAR(50) NOT NULL,
     slot_id INT NOT NULL CHECK (slot_id BETWEEN 1 AND 3),

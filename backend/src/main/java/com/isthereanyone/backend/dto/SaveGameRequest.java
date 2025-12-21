@@ -7,9 +7,6 @@ import jakarta.validation.constraints.NotNull;
 
 import java.util.Map;
 
-/**
- * DTO untuk request save game
- */
 public class SaveGameRequest {
 
     @NotBlank(message = "User ID tidak boleh kosong")
@@ -23,7 +20,6 @@ public class SaveGameRequest {
     @NotNull(message = "Save data tidak boleh kosong")
     private Map<String, Object> saveData;
 
-    // Constructor
     public SaveGameRequest() {}
 
     public SaveGameRequest(String userId, Integer slotId, Map<String, Object> saveData) {
@@ -32,7 +28,6 @@ public class SaveGameRequest {
         this.saveData = saveData;
     }
 
-    // Getters and Setters
     public String getUserId() {
         return userId;
     }

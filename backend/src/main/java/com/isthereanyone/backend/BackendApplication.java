@@ -1,5 +1,6 @@
 package com.isthereanyone.backend;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -7,11 +8,23 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class BackendApplication {
 
     public static void main(String[] args) {
+        loadEnvVariables();
         SpringApplication.run(BackendApplication.class, args);
-        System.out.println("========================================");
-        System.out.println("  Is There Anyone - Game Backend");
-        System.out.println("  Server running on http://localhost:8080");
-        System.out.println("========================================");
     }
 
+    private static void loadEnvVariables() {
+        try {
+            Dotenv dotenv = Dotenv.configure()
+                    .directory("./")
+                    .ignoreIfMissing()
+                    .load();
+
+            dotenv.entries().forEach(entry -> {
+                if (System.getProperty(entry.getKey()) == null) {
+                    System.setProperty(entry.getKey(), entry.getValue());
+                }
+            });
+        } catch (Exception e) {
+        }
+    }
 }

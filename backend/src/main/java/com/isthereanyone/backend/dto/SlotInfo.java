@@ -3,22 +3,15 @@ package com.isthereanyone.backend.dto;
 import java.time.LocalDateTime;
 import java.util.Map;
 
-/**
- * DTO untuk menampilkan info slot tanpa full save data
- * Berguna untuk list slots overview
- */
 public class SlotInfo {
 
     private Integer slotId;
     private boolean isEmpty;
     private LocalDateTime lastUpdated;
-
-    // Preview data dari saveData (untuk tampilan di menu)
     private String currentMap;
     private Integer allTimeDeathCount;
     private Integer allTimeCompletedTask;
 
-    // Constructor
     public SlotInfo() {}
 
     public SlotInfo(Integer slotId, boolean isEmpty) {
@@ -26,18 +19,13 @@ public class SlotInfo {
         this.isEmpty = isEmpty;
     }
 
-    /**
-     * Factory method untuk membuat SlotInfo dari saveData
-     */
     public static SlotInfo fromSaveData(Integer slotId, Map<String, Object> saveData, LocalDateTime lastUpdated) {
         SlotInfo info = new SlotInfo();
         info.setSlotId(slotId);
         info.setEmpty(false);
         info.setLastUpdated(lastUpdated);
 
-        // Extract preview data
         if (saveData != null) {
-            // Get currentMap from playerState
             if (saveData.containsKey("playerState")) {
                 @SuppressWarnings("unchecked")
                 Map<String, Object> playerState = (Map<String, Object>) saveData.get("playerState");
@@ -46,7 +34,6 @@ public class SlotInfo {
                 }
             }
 
-            // Get stats
             if (saveData.containsKey("stats")) {
                 @SuppressWarnings("unchecked")
                 Map<String, Object> stats = (Map<String, Object>) saveData.get("stats");
@@ -60,13 +47,9 @@ public class SlotInfo {
                 }
             }
         }
-
         return info;
     }
 
-    /**
-     * Factory method untuk empty slot
-     */
     public static SlotInfo emptySlot(Integer slotId) {
         SlotInfo info = new SlotInfo();
         info.setSlotId(slotId);
@@ -74,7 +57,6 @@ public class SlotInfo {
         return info;
     }
 
-    // Getters and Setters
     public Integer getSlotId() {
         return slotId;
     }

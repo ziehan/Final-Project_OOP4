@@ -23,6 +23,10 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+
+    // Dotenv untuk membaca .env file
+    implementation 'io.github.cdimascio:dotenv-java:3.0.0'
 
     // PostgreSQL Driver (untuk Neon Console)
     runtimeOnly 'org.postgresql:postgresql'
