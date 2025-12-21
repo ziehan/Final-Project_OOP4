@@ -1,14 +1,9 @@
 package com.isthereanyone.frontend.network.dto;
 
-/**
- * DTO untuk response dari backend API
- * @param <T> tipe data yang dikembalikan
- */
 public class ApiResponse<T> {
     private boolean success;
     private String message;
     private T data;
-    private String timestamp;
 
     public ApiResponse() {}
 
@@ -35,12 +30,5 @@ public class ApiResponse<T> {
     public void setData(T data) {
         this.data = data;
     }
-
-    public String getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(String timestamp) {
-        this.timestamp = timestamp;
-    }
 }
+

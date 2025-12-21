@@ -1,20 +1,30 @@
 package com.isthereanyone.frontend.network;
 
-class AuthResponse {
+// Legacy models - deprecated, use classes in dto package instead
+
+/**
+ * @deprecated Use com.isthereanyone.frontend.network.dto.AuthResponse instead
+ */
+@Deprecated
+class LegacyAuthResponse {
     public boolean success;
     public String message;
     public String token;
-    public UserData user;
+    public LegacyUserData user;
 
-    public AuthResponse() {}
+    public LegacyAuthResponse() {}
 }
 
-class UserData {
+/**
+ * @deprecated Use com.isthereanyone.frontend.network.dto.UserResponse instead
+ */
+@Deprecated
+class LegacyUserData {
     public String username;
     public String email;
     public long createdAt;
 
-    public UserData() {}
+    public LegacyUserData() {}
 }
 
 class SaveSlotRequest {

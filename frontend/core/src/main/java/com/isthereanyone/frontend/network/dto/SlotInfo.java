@@ -1,8 +1,5 @@
 package com.isthereanyone.frontend.network.dto;
 
-/**
- * DTO untuk informasi slot save game
- */
 public class SlotInfo {
     private Integer slotId;
     private boolean isEmpty;

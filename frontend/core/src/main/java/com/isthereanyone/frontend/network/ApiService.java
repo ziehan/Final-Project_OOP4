@@ -1,34 +1,26 @@
 package com.isthereanyone.frontend.network;
 
-import com.badlogic.gdx.Gdx;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
-import com.isthereanyone.frontend.config.GameConfig;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonReader;
+import com.badlogic.gdx.utils.JsonValue;
 import com.isthereanyone.frontend.network.dto.*;
 
-import java.io.*;
-import java.lang.reflect.Type;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Service untuk melakukan HTTP request ke backend API
+ * API Service - handles all backend API calls
  */
 public class ApiService {
     private static ApiService instance;
-    private final Gson gson;
-    private final String baseUrl;
-
-    private static final int CONNECT_TIMEOUT = 10000; // 10 seconds
-    private static final int READ_TIMEOUT = 30000; // 30 seconds
+    private final HttpClient httpClient;
+    private final Json json;
 
     private ApiService() {
-        this.gson = new GsonBuilder().create();
-        this.baseUrl = GameConfig.API_BASE_URL;
+        httpClient = new HttpClient();
+        json = new Json();
     }
 
     public static ApiService getInstance() {
@@ -38,289 +30,349 @@ public class ApiService {
         return instance;
     }
 
-    // ==================== AUTH ENDPOINTS ====================
+    // ==================== AUTH API ====================
 
-    /**
-     * Register user baru
-     */
     public void signup(SignupRequest request, NetworkCallback<ApiResponse<AuthResponse>> callback) {
-        executeAsync(() -> {
-            try {
-                String json = gson.toJson(request);
-                String response = post("/auth/signup", json);
-                Type type = new TypeToken<ApiResponse<AuthResponse>>(){}.getType();
-                ApiResponse<AuthResponse> result = gson.fromJson(response, type);
-                Gdx.app.postRunnable(() -> callback.onSuccess(result));
-            } catch (Exception e) {
-                Gdx.app.postRunnable(() -> callback.onFailure(e.getMessage()));
+        httpClient.post("/api/auth/signup", request, new NetworkCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                try {
+                    ApiResponse<AuthResponse> response = parseAuthResponse(result);
+                    callback.onSuccess(response);
+                } catch (Exception e) {
+                    callback.onFailure("Failed to parse response: " + e.getMessage());
+                }
+            }
+
+            @Override
+            public void onFailure(String error) {
+                callback.onFailure(error);
             }
         });
     }
 
-    /**
-     * Login user
-     */
     public void signin(SigninRequest request, NetworkCallback<ApiResponse<AuthResponse>> callback) {
-        executeAsync(() -> {
-            try {
-                String json = gson.toJson(request);
-                String response = post("/auth/signin", json);
-                Type type = new TypeToken<ApiResponse<AuthResponse>>(){}.getType();
-                ApiResponse<AuthResponse> result = gson.fromJson(response, type);
-                Gdx.app.postRunnable(() -> callback.onSuccess(result));
-            } catch (Exception e) {
-                Gdx.app.postRunnable(() -> callback.onFailure(e.getMessage()));
+        httpClient.post("/api/auth/signin", request, new NetworkCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                try {
+                    ApiResponse<AuthResponse> response = parseAuthResponse(result);
+                    callback.onSuccess(response);
+                } catch (Exception e) {
+                    callback.onFailure("Failed to parse response: " + e.getMessage());
+                }
+            }
+
+            @Override
+            public void onFailure(String error) {
+                callback.onFailure(error);
             }
         });
     }
 
-    /**
-     * Cek apakah username tersedia
-     */
-    public void checkUsername(String username, NetworkCallback<ApiResponse<Boolean>> callback) {
-        executeAsync(() -> {
-            try {
-                String response = get("/auth/check/username/" + username);
-                Type type = new TypeToken<ApiResponse<Boolean>>(){}.getType();
-                ApiResponse<Boolean> result = gson.fromJson(response, type);
-                Gdx.app.postRunnable(() -> callback.onSuccess(result));
-            } catch (Exception e) {
-                Gdx.app.postRunnable(() -> callback.onFailure(e.getMessage()));
+    public void getUser(String username, NetworkCallback<ApiResponse<UserResponse>> callback) {
+        httpClient.get("/api/auth/user/" + username, new NetworkCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                try {
+                    ApiResponse<UserResponse> response = parseUserResponse(result);
+                    callback.onSuccess(response);
+                } catch (Exception e) {
+                    callback.onFailure("Failed to parse response: " + e.getMessage());
+                }
+            }
+
+            @Override
+            public void onFailure(String error) {
+                callback.onFailure(error);
             }
         });
     }
 
-    /**
-     * Cek apakah email tersedia
-     */
-    public void checkEmail(String email, NetworkCallback<ApiResponse<Boolean>> callback) {
-        executeAsync(() -> {
-            try {
-                String response = get("/auth/check/email/" + email);
-                Type type = new TypeToken<ApiResponse<Boolean>>(){}.getType();
-                ApiResponse<Boolean> result = gson.fromJson(response, type);
-                Gdx.app.postRunnable(() -> callback.onSuccess(result));
-            } catch (Exception e) {
-                Gdx.app.postRunnable(() -> callback.onFailure(e.getMessage()));
-            }
-        });
-    }
+    // ==================== SAVE GAME API ====================
 
-    /**
-     * Get user info by username
-     */
-    public void getUserByUsername(String username, NetworkCallback<ApiResponse<UserResponse>> callback) {
-        executeAsync(() -> {
-            try {
-                String response = get("/auth/user/" + username);
-                Type type = new TypeToken<ApiResponse<UserResponse>>(){}.getType();
-                ApiResponse<UserResponse> result = gson.fromJson(response, type);
-                Gdx.app.postRunnable(() -> callback.onSuccess(result));
-            } catch (Exception e) {
-                Gdx.app.postRunnable(() -> callback.onFailure(e.getMessage()));
-            }
-        });
-    }
-
-    // ==================== GAME SAVE ENDPOINTS ====================
-
-    /**
-     * Save game ke slot tertentu
-     */
     public void saveGame(SaveGameRequest request, NetworkCallback<ApiResponse<GameSaveResponse>> callback) {
-        executeAsync(() -> {
-            try {
-                String json = gson.toJson(request);
-                String response = post("/save", json);
-                Type type = new TypeToken<ApiResponse<GameSaveResponse>>(){}.getType();
-                ApiResponse<GameSaveResponse> result = gson.fromJson(response, type);
-                Gdx.app.postRunnable(() -> callback.onSuccess(result));
-            } catch (Exception e) {
-                Gdx.app.postRunnable(() -> callback.onFailure(e.getMessage()));
+        httpClient.post("/api/save", request, new NetworkCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                try {
+                    ApiResponse<GameSaveResponse> response = parseGameSaveResponse(result);
+                    callback.onSuccess(response);
+                } catch (Exception e) {
+                    callback.onFailure("Failed to parse response: " + e.getMessage());
+                }
+            }
+
+            @Override
+            public void onFailure(String error) {
+                callback.onFailure(error);
             }
         });
     }
 
-    /**
-     * Load game dari slot tertentu
-     */
-    public void loadGame(String oderId, int slotId, NetworkCallback<ApiResponse<GameSaveResponse>> callback) {
-        executeAsync(() -> {
-            try {
-                String response = get("/save/" + oderId + "/" + slotId);
-                Type type = new TypeToken<ApiResponse<GameSaveResponse>>(){}.getType();
-                ApiResponse<GameSaveResponse> result = gson.fromJson(response, type);
-                Gdx.app.postRunnable(() -> callback.onSuccess(result));
-            } catch (Exception e) {
-                Gdx.app.postRunnable(() -> callback.onFailure(e.getMessage()));
+    public void loadGame(String userId, int slotId, NetworkCallback<ApiResponse<GameSaveResponse>> callback) {
+        httpClient.get("/api/save/" + userId + "/" + slotId, new NetworkCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                try {
+                    ApiResponse<GameSaveResponse> response = parseGameSaveResponse(result);
+                    callback.onSuccess(response);
+                } catch (Exception e) {
+                    callback.onFailure("Failed to parse response: " + e.getMessage());
+                }
+            }
+
+            @Override
+            public void onFailure(String error) {
+                callback.onFailure(error);
             }
         });
     }
 
-    /**
-     * Get semua slot info untuk user
-     */
     public void getAllSlots(String userId, NetworkCallback<ApiResponse<List<SlotInfo>>> callback) {
-        executeAsync(() -> {
-            try {
-                String response = get("/save/" + userId + "/slots");
-                Type type = new TypeToken<ApiResponse<List<SlotInfo>>>(){}.getType();
-                ApiResponse<List<SlotInfo>> result = gson.fromJson(response, type);
-                Gdx.app.postRunnable(() -> callback.onSuccess(result));
-            } catch (Exception e) {
-                Gdx.app.postRunnable(() -> callback.onFailure(e.getMessage()));
+        httpClient.get("/api/save/" + userId + "/slots", new NetworkCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                try {
+                    ApiResponse<List<SlotInfo>> response = parseSlotsResponse(result);
+                    callback.onSuccess(response);
+                } catch (Exception e) {
+                    callback.onFailure("Failed to parse response: " + e.getMessage());
+                }
+            }
+
+            @Override
+            public void onFailure(String error) {
+                callback.onFailure(error);
             }
         });
     }
 
-    /**
-     * Hapus save slot tertentu
-     */
     public void deleteSlot(String userId, int slotId, NetworkCallback<ApiResponse<Void>> callback) {
-        executeAsync(() -> {
-            try {
-                String response = delete("/save/" + userId + "/" + slotId);
-                Type type = new TypeToken<ApiResponse<Void>>(){}.getType();
-                ApiResponse<Void> result = gson.fromJson(response, type);
-                Gdx.app.postRunnable(() -> callback.onSuccess(result));
-            } catch (Exception e) {
-                Gdx.app.postRunnable(() -> callback.onFailure(e.getMessage()));
+        httpClient.delete("/api/save/" + userId + "/" + slotId, new NetworkCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                try {
+                    ApiResponse<Void> response = parseVoidResponse(result);
+                    callback.onSuccess(response);
+                } catch (Exception e) {
+                    callback.onFailure("Failed to parse response: " + e.getMessage());
+                }
+            }
+
+            @Override
+            public void onFailure(String error) {
+                callback.onFailure(error);
             }
         });
     }
 
-    /**
-     * Hapus semua save slot user
-     */
-    public void deleteAllSlots(String userId, NetworkCallback<ApiResponse<Void>> callback) {
-        executeAsync(() -> {
-            try {
-                String response = delete("/save/" + userId);
-                Type type = new TypeToken<ApiResponse<Void>>(){}.getType();
-                ApiResponse<Void> result = gson.fromJson(response, type);
-                Gdx.app.postRunnable(() -> callback.onSuccess(result));
-            } catch (Exception e) {
-                Gdx.app.postRunnable(() -> callback.onFailure(e.getMessage()));
-            }
-        });
-    }
+    // ==================== HEALTH API ====================
 
-    /**
-     * Cek apakah slot exists
-     */
-    public void checkSlotExists(String userId, int slotId, NetworkCallback<ApiResponse<Boolean>> callback) {
-        executeAsync(() -> {
-            try {
-                String response = get("/save/" + userId + "/" + slotId + "/exists");
-                Type type = new TypeToken<ApiResponse<Boolean>>(){}.getType();
-                ApiResponse<Boolean> result = gson.fromJson(response, type);
-                Gdx.app.postRunnable(() -> callback.onSuccess(result));
-            } catch (Exception e) {
-                Gdx.app.postRunnable(() -> callback.onFailure(e.getMessage()));
-            }
-        });
-    }
-
-    // ==================== HEALTH CHECK ====================
-
-    /**
-     * Health check ke server
-     */
-    public void healthCheck(NetworkCallback<ApiResponse<Map<String, Object>>> callback) {
-        executeAsync(() -> {
-            try {
-                String response = get("/health");
-                Type type = new TypeToken<ApiResponse<Map<String, Object>>>(){}.getType();
-                ApiResponse<Map<String, Object>> result = gson.fromJson(response, type);
-                Gdx.app.postRunnable(() -> callback.onSuccess(result));
-            } catch (Exception e) {
-                Gdx.app.postRunnable(() -> callback.onFailure(e.getMessage()));
-            }
-        });
-    }
-
-    /**
-     * Ping server
-     */
     public void ping(NetworkCallback<String> callback) {
-        executeAsync(() -> {
-            try {
-                String response = get("/ping");
-                Gdx.app.postRunnable(() -> callback.onSuccess(response));
-            } catch (Exception e) {
-                Gdx.app.postRunnable(() -> callback.onFailure(e.getMessage()));
+        httpClient.get("/api/ping", callback);
+    }
+
+    public void healthCheck(NetworkCallback<ApiResponse<Map<String, Object>>> callback) {
+        httpClient.get("/api/health", new NetworkCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                try {
+                    ApiResponse<Map<String, Object>> response = parseHealthResponse(result);
+                    callback.onSuccess(response);
+                } catch (Exception e) {
+                    callback.onFailure("Failed to parse response: " + e.getMessage());
+                }
+            }
+
+            @Override
+            public void onFailure(String error) {
+                callback.onFailure(error);
             }
         });
     }
 
-    // ==================== HTTP METHODS ====================
+    // ==================== PARSERS ====================
 
-    private String get(String endpoint) throws IOException {
-        URL url = new URL(baseUrl + endpoint);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("GET");
-        conn.setRequestProperty("Accept", "application/json");
-        conn.setConnectTimeout(CONNECT_TIMEOUT);
-        conn.setReadTimeout(READ_TIMEOUT);
+    private ApiResponse<AuthResponse> parseAuthResponse(String jsonString) {
+        JsonValue root = new JsonReader().parse(jsonString);
 
-        return readResponse(conn);
-    }
+        ApiResponse<AuthResponse> response = new ApiResponse<>();
+        response.setSuccess(root.getBoolean("success"));
+        response.setMessage(root.getString("message"));
 
-    private String post(String endpoint, String jsonBody) throws IOException {
-        URL url = new URL(baseUrl + endpoint);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("POST");
-        conn.setRequestProperty("Content-Type", "application/json");
-        conn.setRequestProperty("Accept", "application/json");
-        conn.setConnectTimeout(CONNECT_TIMEOUT);
-        conn.setReadTimeout(READ_TIMEOUT);
-        conn.setDoOutput(true);
+        if (root.has("data") && !root.get("data").isNull()) {
+            JsonValue dataJson = root.get("data");
+            AuthResponse authResponse = new AuthResponse();
 
-        try (OutputStream os = conn.getOutputStream()) {
-            byte[] input = jsonBody.getBytes(StandardCharsets.UTF_8);
-            os.write(input, 0, input.length);
-        }
-
-        return readResponse(conn);
-    }
-
-    private String delete(String endpoint) throws IOException {
-        URL url = new URL(baseUrl + endpoint);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("DELETE");
-        conn.setRequestProperty("Accept", "application/json");
-        conn.setConnectTimeout(CONNECT_TIMEOUT);
-        conn.setReadTimeout(READ_TIMEOUT);
-
-        return readResponse(conn);
-    }
-
-    private String readResponse(HttpURLConnection conn) throws IOException {
-        int responseCode = conn.getResponseCode();
-        InputStream is;
-
-        if (responseCode >= 200 && responseCode < 300) {
-            is = conn.getInputStream();
-        } else {
-            is = conn.getErrorStream();
-        }
-
-        if (is == null) {
-            throw new IOException("No response from server");
-        }
-
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
-            StringBuilder response = new StringBuilder();
-            String line;
-            while ((line = br.readLine()) != null) {
-                response.append(line);
+            if (dataJson.has("message")) {
+                authResponse.setMessage(dataJson.getString("message"));
             }
-            return response.toString();
+            if (dataJson.has("token") && !dataJson.get("token").isNull()) {
+                authResponse.setToken(dataJson.getString("token"));
+            }
+
+            if (dataJson.has("user") && !dataJson.get("user").isNull()) {
+                JsonValue userJson = dataJson.get("user");
+                UserResponse user = new UserResponse();
+                user.setId(userJson.getLong("id"));
+                user.setUsername(userJson.getString("username"));
+                user.setEmail(userJson.getString("email"));
+                if (userJson.has("displayName") && !userJson.get("displayName").isNull()) {
+                    user.setDisplayName(userJson.getString("displayName"));
+                }
+                authResponse.setUser(user);
+            }
+
+            response.setData(authResponse);
         }
+
+        return response;
     }
 
-    private void executeAsync(Runnable task) {
-        new Thread(task).start();
+    private ApiResponse<UserResponse> parseUserResponse(String jsonString) {
+        JsonValue root = new JsonReader().parse(jsonString);
+
+        ApiResponse<UserResponse> response = new ApiResponse<>();
+        response.setSuccess(root.getBoolean("success"));
+        response.setMessage(root.getString("message"));
+
+        if (root.has("data") && !root.get("data").isNull()) {
+            JsonValue userJson = root.get("data");
+            UserResponse user = new UserResponse();
+            user.setId(userJson.getLong("id"));
+            user.setUsername(userJson.getString("username"));
+            user.setEmail(userJson.getString("email"));
+            if (userJson.has("displayName") && !userJson.get("displayName").isNull()) {
+                user.setDisplayName(userJson.getString("displayName"));
+            }
+            response.setData(user);
+        }
+
+        return response;
+    }
+
+    private ApiResponse<GameSaveResponse> parseGameSaveResponse(String jsonString) {
+        JsonValue root = new JsonReader().parse(jsonString);
+
+        ApiResponse<GameSaveResponse> response = new ApiResponse<>();
+        response.setSuccess(root.getBoolean("success"));
+        response.setMessage(root.getString("message"));
+
+        if (root.has("data") && !root.get("data").isNull()) {
+            JsonValue dataJson = root.get("data");
+            GameSaveResponse saveResponse = new GameSaveResponse();
+            saveResponse.setUserId(dataJson.getString("userId"));
+            saveResponse.setSlotId(dataJson.getInt("slotId"));
+
+            if (dataJson.has("lastUpdated") && !dataJson.get("lastUpdated").isNull()) {
+                saveResponse.setLastUpdated(dataJson.getString("lastUpdated"));
+            }
+
+            if (dataJson.has("saveData") && !dataJson.get("saveData").isNull()) {
+                Map<String, Object> saveData = parseJsonToMap(dataJson.get("saveData"));
+                saveResponse.setSaveData(saveData);
+            }
+
+            response.setData(saveResponse);
+        }
+
+        return response;
+    }
+
+    private ApiResponse<List<SlotInfo>> parseSlotsResponse(String jsonString) {
+        JsonValue root = new JsonReader().parse(jsonString);
+
+        ApiResponse<List<SlotInfo>> response = new ApiResponse<>();
+        response.setSuccess(root.getBoolean("success"));
+        response.setMessage(root.getString("message"));
+
+        List<SlotInfo> slots = new ArrayList<>();
+        if (root.has("data") && !root.get("data").isNull()) {
+            JsonValue dataArray = root.get("data");
+            for (JsonValue slotJson : dataArray) {
+                SlotInfo slot = new SlotInfo();
+                slot.setSlotId(slotJson.getInt("slotId"));
+                slot.setEmpty(slotJson.getBoolean("empty", true));
+
+                if (slotJson.has("lastUpdated") && !slotJson.get("lastUpdated").isNull()) {
+                    slot.setLastUpdated(slotJson.getString("lastUpdated"));
+                }
+                if (slotJson.has("currentMap") && !slotJson.get("currentMap").isNull()) {
+                    slot.setCurrentMap(slotJson.getString("currentMap"));
+                }
+                if (slotJson.has("allTimeDeathCount") && !slotJson.get("allTimeDeathCount").isNull()) {
+                    slot.setAllTimeDeathCount(slotJson.getInt("allTimeDeathCount"));
+                }
+                if (slotJson.has("allTimeCompletedTask") && !slotJson.get("allTimeCompletedTask").isNull()) {
+                    slot.setAllTimeCompletedTask(slotJson.getInt("allTimeCompletedTask"));
+                }
+
+                slots.add(slot);
+            }
+        }
+        response.setData(slots);
+
+        return response;
+    }
+
+    private ApiResponse<Void> parseVoidResponse(String jsonString) {
+        JsonValue root = new JsonReader().parse(jsonString);
+
+        ApiResponse<Void> response = new ApiResponse<>();
+        response.setSuccess(root.getBoolean("success"));
+        response.setMessage(root.getString("message"));
+        response.setData(null);
+
+        return response;
+    }
+
+    private ApiResponse<Map<String, Object>> parseHealthResponse(String jsonString) {
+        JsonValue root = new JsonReader().parse(jsonString);
+
+        ApiResponse<Map<String, Object>> response = new ApiResponse<>();
+        response.setSuccess(root.getBoolean("success"));
+        response.setMessage(root.getString("message"));
+
+        if (root.has("data") && !root.get("data").isNull()) {
+            Map<String, Object> data = parseJsonToMap(root.get("data"));
+            response.setData(data);
+        }
+
+        return response;
+    }
+
+    private Map<String, Object> parseJsonToMap(JsonValue jsonValue) {
+        Map<String, Object> map = new HashMap<>();
+        for (JsonValue entry = jsonValue.child; entry != null; entry = entry.next) {
+            String key = entry.name;
+            if (entry.isObject()) {
+                map.put(key, parseJsonToMap(entry));
+            } else if (entry.isArray()) {
+                List<Object> list = new ArrayList<>();
+                for (JsonValue item : entry) {
+                    if (item.isObject()) {
+                        list.add(parseJsonToMap(item));
+                    } else if (item.isString()) {
+                        list.add(item.asString());
+                    } else if (item.isNumber()) {
+                        list.add(item.asDouble());
+                    } else if (item.isBoolean()) {
+                        list.add(item.asBoolean());
+                    }
+                }
+                map.put(key, list);
+            } else if (entry.isString()) {
+                map.put(key, entry.asString());
+            } else if (entry.isNumber()) {
+                map.put(key, entry.asDouble());
+            } else if (entry.isBoolean()) {
+                map.put(key, entry.asBoolean());
+            } else if (entry.isNull()) {
+                map.put(key, null);
+            }
+        }
+        return map;
     }
 }
 

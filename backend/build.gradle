@@ -28,8 +28,11 @@ dependencies {
     // Dotenv untuk membaca .env file
     implementation 'io.github.cdimascio:dotenv-java:3.0.0'
 
-    // PostgreSQL Driver (untuk Neon Console)
+    // PostgreSQL Driver (untuk Neon Console / Production)
     runtimeOnly 'org.postgresql:postgresql'
+
+    // H2 Database (untuk development/testing)
+    runtimeOnly 'com.h2database:h2'
 
     // Hibernate Types untuk JSONB support
     implementation 'io.hypersistence:hypersistence-utils-hibernate-63:3.7.3'

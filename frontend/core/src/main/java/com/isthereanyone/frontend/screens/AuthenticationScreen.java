@@ -14,6 +14,9 @@ import com.badlogic.gdx.math.Vector3;
 import com.isthereanyone.frontend.config.GameConfig;
 import com.isthereanyone.frontend.managers.AuthenticationManager;
 import com.isthereanyone.frontend.managers.ScreenManager;
+import com.isthereanyone.frontend.network.NetworkCallback;
+import com.isthereanyone.frontend.network.dto.ApiResponse;
+import com.isthereanyone.frontend.network.dto.AuthResponse;
 
 public class AuthenticationScreen extends BaseScreen {
     private ShapeRenderer shapeRenderer;
@@ -30,6 +33,7 @@ public class AuthenticationScreen extends BaseScreen {
     private int focusedField = 0;
     private float cursorBlink = 0f;
     private InputProcessor inputProcessor;
+    private boolean isLoading = false;
 
     private static final float W = GameConfig.VIEWPORT_WIDTH;
     private static final float H = GameConfig.VIEWPORT_HEIGHT;
@@ -251,6 +255,8 @@ public class AuthenticationScreen extends BaseScreen {
     }
 
     private void handleAuthAction() {
+        if (isLoading) return;
+
         String username = usernameInput.toString().trim();
         String password = passwordInput.toString();
 
@@ -259,22 +265,50 @@ public class AuthenticationScreen extends BaseScreen {
             return;
         }
 
+        isLoading = true;
+        setErrorMessage("Loading...");
+
         AuthenticationManager auth = AuthenticationManager.getInstance();
         if (currentState == AuthState.LOGIN) {
-            if (auth.login(username, password)) {
-                resetInputs();
-                ScreenManager.getInstance().setScreen(new SaveLoadScreen());
-            } else {
-                setErrorMessage("Login gagal!");
-            }
+            auth.login(username, password, new NetworkCallback<ApiResponse<AuthResponse>>() {
+                @Override
+                public void onSuccess(ApiResponse<AuthResponse> result) {
+                    isLoading = false;
+                    if (result.isSuccess()) {
+                        resetInputs();
+                        ScreenManager.getInstance().setScreen(new SaveSlotScreen());
+                    } else {
+                        setErrorMessage(result.getMessage() != null ? result.getMessage() : "Login gagal!");
+                    }
+                }
+
+                @Override
+                public void onFailure(String error) {
+                    isLoading = false;
+                    setErrorMessage("Koneksi error: " + error);
+                }
+            });
         } else {
-            if (auth.signup(username, password)) {
-                resetInputs();
-                setErrorMessage("Signup berhasil! Silakan login.");
-                currentState = AuthState.LOGIN;
-            } else {
-                setErrorMessage("Signup gagal!");
-            }
+            String email = username + "@game.local";
+            auth.signup(username, email, password, username, new NetworkCallback<ApiResponse<AuthResponse>>() {
+                @Override
+                public void onSuccess(ApiResponse<AuthResponse> result) {
+                    isLoading = false;
+                    if (result.isSuccess()) {
+                        resetInputs();
+                        setErrorMessage("Signup berhasil! Silakan login.");
+                        currentState = AuthState.LOGIN;
+                    } else {
+                        setErrorMessage(result.getMessage() != null ? result.getMessage() : "Signup gagal!");
+                    }
+                }
+
+                @Override
+                public void onFailure(String error) {
+                    isLoading = false;
+                    setErrorMessage("Koneksi error: " + error);
+                }
+            });
         }
     }
 

@@ -1,201 +1,205 @@
-# Is There Anyone - Game Backend API
+# 📖 API Documentation - Is There Anyone
 
-Backend REST API untuk game "Is There Anyone" menggunakan Spring Boot dan PostgreSQL (Neon Console).
+## 🌐 Base Configuration
 
-## 🚀 Quick Start
-
-### 1. Setup Database (Neon Console)
-
-1. Buat akun di [Neon Console](https://neon.tech/)
-2. Buat project baru
-3. Copy connection string
-4. Jalankan query dari `src/main/resources/schema.sql` di Neon SQL Editor
-
-### 2. Konfigurasi
-
-Edit `src/main/resources/application.properties`:
-
-```properties
-spring.datasource.url=jdbc:postgresql://ep-xxxxx.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
-spring.datasource.username=neondb_owner
-spring.datasource.password=YOUR_PASSWORD_HERE
-```
-
-### 3. Jalankan Server
-
-```bash
-# Windows
-.\gradlew.bat bootRun
-
-# Linux/Mac
-./gradlew bootRun
-```
-
-Server akan berjalan di `http://localhost:8080`
+| Item | Value                       |
+|------|-----------------------------|
+| **Base URL** | `http://localhost:9090/api` |
+| **Content-Type** | `application/json`          |
+| **Server Port** | `9090`                      |
 
 ---
 
-## 📡 API Endpoints
+## 📦 Standard Response Format
 
-### Health Check
+Semua endpoint mengembalikan response dengan format berikut:
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/health` | Health check |
-| GET | `/api/ping` | Simple ping |
-
-### Authentication
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/signup` | Register user baru |
-| POST | `/api/auth/signin` | Login user |
-| GET | `/api/auth/check/username/{username}` | Cek username tersedia |
-| GET | `/api/auth/check/email/{email}` | Cek email tersedia |
-| GET | `/api/auth/user/{username}` | Get user info |
-
-### Game Save
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/save` | Save game ke slot |
-| GET | `/api/save/{userId}/{slotId}` | Load game dari slot |
-| GET | `/api/save/{userId}/slots` | Get semua slot info |
-| DELETE | `/api/save/{userId}/{slotId}` | Hapus slot tertentu |
-| DELETE | `/api/save/{userId}` | Hapus semua slot user |
-| GET | `/api/save/{userId}/{slotId}/exists` | Cek slot exists |
-
----
-
-## 📝 Request/Response Examples
-
-### Authentication
-
-#### Signup (Register)
-
-**Request:**
-```http
-POST /api/auth/signup
-Content-Type: application/json
-
+```json
 {
-  "username": "player123",
-  "email": "player@example.com",
-  "password": "password123",
-  "displayName": "Player One"
+  "success": true,
+  "message": "Pesan sukses/error",
+  "data": { ... },
+  "timestamp": "2025-12-21T10:30:00"
 }
 ```
 
-**Response:**
+---
+
+## 🔐 Authentication Endpoints
+
+### 1. Sign Up (Registrasi)
+
+**Endpoint:** `POST /api/auth/signup`
+
+**Request Body:**
+```json
+{
+  "username": "player123",
+  "email": "player@email.com",
+  "password": "password123",
+  "displayName": "Player One"  // optional
+}
+```
+
+**Validation:**
+- `username`: wajib, 3-50 karakter
+- `email`: wajib, format email valid
+- `password`: wajib, minimal 6 karakter
+- `displayName`: opsional
+
+**Success Response (201 Created):**
 ```json
 {
   "success": true,
   "message": "Registrasi berhasil",
   "data": {
-    "message": "Registrasi berhasil",
+    "message": "Registration successful",
     "user": {
       "id": 1,
       "username": "player123",
-      "email": "player@example.com",
+      "email": "player@email.com",
       "displayName": "Player One",
-      "createdAt": "2024-12-21T13:00:00"
-    }
+      "createdAt": "2025-12-21T10:30:00"
+    },
+    "token": null
   },
-  "timestamp": "2024-12-21T13:00:00"
+  "timestamp": "2025-12-21T10:30:00"
 }
 ```
 
-#### Signin (Login)
+---
 
-**Request:**
-```http
-POST /api/auth/signin
-Content-Type: application/json
+### 2. Sign In (Login)
 
+**Endpoint:** `POST /api/auth/signin`
+
+**Request Body:**
+```json
 {
   "usernameOrEmail": "player123",
   "password": "password123"
 }
 ```
 
-**Response:**
+**Validation:**
+- `usernameOrEmail`: wajib (bisa username atau email)
+- `password`: wajib
+
+**Success Response (200 OK):**
 ```json
 {
   "success": true,
   "message": "Login berhasil",
   "data": {
-    "message": "Login berhasil",
+    "message": "Login successful",
     "user": {
       "id": 1,
       "username": "player123",
-      "email": "player@example.com",
-      "displayName": "Player One"
-    }
+      "email": "player@email.com",
+      "displayName": "Player One",
+      "createdAt": "2025-12-21T10:30:00"
+    },
+    "token": null
   },
-  "timestamp": "2024-12-21T13:00:00"
-}
-```
-
-#### Check Username
-
-**Request:**
-```http
-GET /api/auth/check/username/player123
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "message": "Username sudah digunakan",
-  "data": true,
-  "timestamp": "2024-12-21T13:00:00"
+  "timestamp": "2025-12-21T10:30:00"
 }
 ```
 
 ---
 
-### Game Save
+### 3. Check Username Availability
 
-#### Save Game
+**Endpoint:** `GET /api/auth/check/username/{username}`
 
-**Request:**
-```http
-POST /api/save
-Content-Type: application/json
+**Example:** `GET /api/auth/check/username/player123`
 
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Username sudah digunakan",  // atau "Username tersedia"
+  "data": true,  // true jika sudah digunakan, false jika tersedia
+  "timestamp": "2025-12-21T10:30:00"
+}
+```
+
+---
+
+### 4. Check Email Availability
+
+**Endpoint:** `GET /api/auth/check/email/{email}`
+
+**Example:** `GET /api/auth/check/email/player@email.com`
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Email sudah terdaftar",  // atau "Email tersedia"
+  "data": true,  // true jika sudah terdaftar, false jika tersedia
+  "timestamp": "2025-12-21T10:30:00"
+}
+```
+
+---
+
+### 5. Get User by Username
+
+**Endpoint:** `GET /api/auth/user/{username}`
+
+**Example:** `GET /api/auth/user/player123`
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "User ditemukan",
+  "data": {
+    "id": 1,
+    "username": "player123",
+    "email": "player@email.com",
+    "displayName": "Player One",
+    "createdAt": "2025-12-21T10:30:00"
+  },
+  "timestamp": "2025-12-21T10:30:00"
+}
+```
+
+---
+
+## 💾 Game Save Endpoints
+
+### 1. Save Game
+
+**Endpoint:** `POST /api/save`
+
+**Request Body:**
+```json
 {
   "userId": "player123",
   "slotId": 1,
   "saveData": {
-    "saveSlot": 1,
-    "timestamp": 1734710000,
     "playerState": {
-      "x": 1400.5,
-      "y": 2300.0,
-      "currentMap": "Map_Level_1"
-    },
-    "ghostState": {
-      "x": 1200.0,
-      "y": 600.0
+      "currentMap": "forest_level",
+      "posX": 100,
+      "posY": 200,
+      "health": 100
     },
     "stats": {
       "allTimeDeathCount": 5,
-      "allTimeCompletedTask": 2
+      "allTimeCompletedTask": 10
     },
-    "worldState": {
-      "completedTaskTiledIds": [352, 104],
-      "itemsOnGround": [
-        {"type": "FLOWER", "x": 500.5, "y": 1200.0},
-        {"type": "DAGGER", "x": 2400.0, "y": 300.0}
-      ]
-    },
-    "inventory": ["CANDLE", "DOLL"]
+    "inventory": ["sword", "potion", "key"]
   }
 }
 ```
 
-**Response:**
+**Validation:**
+- `userId`: wajib
+- `slotId`: wajib, nilai 1-3
+- `saveData`: wajib (bisa berisi data apapun dalam format JSON)
+
+**Response (200 OK):**
 ```json
 {
   "success": true,
@@ -204,20 +208,21 @@ Content-Type: application/json
     "userId": "player123",
     "slotId": 1,
     "saveData": { ... },
-    "lastUpdated": "2024-12-21T10:30:00"
+    "lastUpdated": "2025-12-21T10:30:00"
   },
-  "timestamp": "2024-12-21T10:30:00"
+  "timestamp": "2025-12-21T10:30:00"
 }
 ```
 
-### Load Game
+---
 
-**Request:**
-```http
-GET /api/save/player123/1
-```
+### 2. Load Game
 
-**Response:**
+**Endpoint:** `GET /api/save/{userId}/{slotId}`
+
+**Example:** `GET /api/save/player123/1`
+
+**Response (200 OK):**
 ```json
 {
   "success": true,
@@ -225,21 +230,26 @@ GET /api/save/player123/1
   "data": {
     "userId": "player123",
     "slotId": 1,
-    "saveData": { ... },
-    "lastUpdated": "2024-12-21T10:30:00"
+    "saveData": {
+      "playerState": { ... },
+      "stats": { ... },
+      "inventory": [ ... ]
+    },
+    "lastUpdated": "2025-12-21T10:30:00"
   },
-  "timestamp": "2024-12-21T10:30:00"
+  "timestamp": "2025-12-21T10:30:00"
 }
 ```
 
-### Get All Slots
+---
 
-**Request:**
-```http
-GET /api/save/player123/slots
-```
+### 3. Get All Save Slots
 
-**Response:**
+**Endpoint:** `GET /api/save/{userId}/slots`
+
+**Example:** `GET /api/save/player123/slots`
+
+**Response (200 OK):**
 ```json
 {
   "success": true,
@@ -248,150 +258,318 @@ GET /api/save/player123/slots
     {
       "slotId": 1,
       "isEmpty": false,
-      "lastUpdated": "2024-12-21T10:30:00",
-      "currentMap": "Map_Level_1",
+      "lastUpdated": "2025-12-21T10:30:00",
+      "currentMap": "forest_level",
       "allTimeDeathCount": 5,
-      "allTimeCompletedTask": 2
+      "allTimeCompletedTask": 10
     },
     {
       "slotId": 2,
-      "isEmpty": true
+      "isEmpty": true,
+      "lastUpdated": null,
+      "currentMap": null,
+      "allTimeDeathCount": null,
+      "allTimeCompletedTask": null
     },
     {
       "slotId": 3,
-      "isEmpty": true
+      "isEmpty": true,
+      "lastUpdated": null,
+      "currentMap": null,
+      "allTimeDeathCount": null,
+      "allTimeCompletedTask": null
     }
   ],
-  "timestamp": "2024-12-21T10:30:00"
+  "timestamp": "2025-12-21T10:30:00"
 }
 ```
 
 ---
 
-## 🎮 LibGDX Integration
+### 4. Delete Save Slot
 
-### Contoh kode untuk game client (Java/LibGDX):
+**Endpoint:** `DELETE /api/save/{userId}/{slotId}`
 
-```java
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Net;
-import com.badlogic.gdx.net.HttpRequestBuilder;
-import com.badlogic.gdx.utils.Json;
+**Example:** `DELETE /api/save/player123/1`
 
-public class GameSaveClient {
-    
-    private static final String BASE_URL = "http://localhost:8080/api/save";
-    private final Json json = new Json();
-    
-    public void saveGame(String userId, int slotId, SaveData saveData) {
-        SaveRequest request = new SaveRequest(userId, slotId, saveData);
-        
-        Net.HttpRequest httpRequest = new HttpRequestBuilder()
-            .newRequest()
-            .method(Net.HttpMethods.POST)
-            .url(BASE_URL)
-            .header("Content-Type", "application/json")
-            .content(json.toJson(request))
-            .build();
-        
-        Gdx.net.sendHttpRequest(httpRequest, new Net.HttpResponseListener() {
-            @Override
-            public void handleHttpResponse(Net.HttpResponse httpResponse) {
-                String response = httpResponse.getResultAsString();
-                Gdx.app.log("SaveGame", "Success: " + response);
-            }
-            
-            @Override
-            public void failed(Throwable t) {
-                Gdx.app.error("SaveGame", "Failed: " + t.getMessage());
-            }
-            
-            @Override
-            public void cancelled() {
-                Gdx.app.log("SaveGame", "Cancelled");
-            }
-        });
-    }
-    
-    public void loadGame(String userId, int slotId, GameLoadCallback callback) {
-        String url = BASE_URL + "/" + userId + "/" + slotId;
-        
-        Net.HttpRequest httpRequest = new HttpRequestBuilder()
-            .newRequest()
-            .method(Net.HttpMethods.GET)
-            .url(url)
-            .build();
-        
-        Gdx.net.sendHttpRequest(httpRequest, new Net.HttpResponseListener() {
-            @Override
-            public void handleHttpResponse(Net.HttpResponse httpResponse) {
-                String response = httpResponse.getResultAsString();
-                // Parse response and callback
-                callback.onLoaded(parseResponse(response));
-            }
-            
-            @Override
-            public void failed(Throwable t) {
-                callback.onError(t.getMessage());
-            }
-            
-            @Override
-            public void cancelled() {
-                callback.onError("Request cancelled");
-            }
-        });
-    }
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Slot berhasil dihapus",
+  "data": null,
+  "timestamp": "2025-12-21T10:30:00"
 }
 ```
 
 ---
 
-## 📁 Project Structure
+### 5. Delete All Save Slots
 
-```
-backend/
-├── src/main/java/com/isthereanyone/backend/
-│   ├── BackendApplication.java          # Main application
-│   ├── config/
-│   │   └── CorsConfig.java              # CORS configuration
-│   ├── controller/
-│   │   ├── GameSaveController.java      # REST endpoints
-│   │   └── HealthController.java        # Health check
-│   ├── dto/
-│   │   ├── ApiResponse.java             # Generic response wrapper
-│   │   ├── GameSaveResponse.java        # Save response DTO
-│   │   ├── SaveGameRequest.java         # Save request DTO
-│   │   └── SlotInfo.java                # Slot info DTO
-│   ├── entity/
-│   │   ├── GameSave.java                # JPA Entity
-│   │   └── GameSaveId.java              # Composite Key
-│   ├── exception/
-│   │   ├── GlobalExceptionHandler.java  # Exception handler
-│   │   ├── InvalidOperationException.java
-│   │   └── ResourceNotFoundException.java
-│   ├── repository/
-│   │   └── GameSaveRepository.java      # JPA Repository
-│   └── service/
-│       └── GameSaveService.java         # Business logic
-├── src/main/resources/
-│   ├── application.properties           # Configuration
-│   └── schema.sql                       # Database schema
-└── build.gradle                         # Dependencies
+**Endpoint:** `DELETE /api/save/{userId}`
+
+**Example:** `DELETE /api/save/player123`
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Semua slot berhasil dihapus",
+  "data": null,
+  "timestamp": "2025-12-21T10:30:00"
+}
 ```
 
 ---
 
-## 🔧 Technologies
+### 6. Check Slot Exists
 
-- **Java 17**
-- **Spring Boot 3.2.1**
-- **Spring Data JPA**
-- **PostgreSQL** (Neon Console)
-- **Hypersistence Utils** (JSONB support)
+**Endpoint:** `GET /api/save/{userId}/{slotId}/exists`
+
+**Example:** `GET /api/save/player123/1/exists`
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Success",
+  "data": true,  // true jika slot ada, false jika kosong
+  "timestamp": "2025-12-21T10:30:00"
+}
+```
 
 ---
 
-## 📄 License
+## 🏥 Health Check Endpoints
 
-MIT License
+### 1. Health Check
+
+**Endpoint:** `GET /api/health`
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Server is running",
+  "data": {
+    "status": "UP",
+    "service": "Is There Anyone - Game Backend",
+    "version": "1.0.0",
+    "timestamp": "2025-12-21T10:30:00"
+  },
+  "timestamp": "2025-12-21T10:30:00"
+}
+```
+
+---
+
+### 2. Ping
+
+**Endpoint:** `GET /api/ping`
+
+**Response:** `pong` (plain text)
+
+---
+
+## ❌ Error Responses
+
+### Validation Error (400 Bad Request)
+```json
+{
+  "success": false,
+  "message": "Validation failed",
+  "data": {
+    "username": "Username harus 3-50 karakter",
+    "email": "Format email tidak valid"
+  },
+  "timestamp": "2025-12-21T10:30:00"
+}
+```
+
+### Not Found (404)
+```json
+{
+  "success": false,
+  "message": "User tidak ditemukan",
+  "data": null,
+  "timestamp": "2025-12-21T10:30:00"
+}
+```
+
+### Conflict (409)
+```json
+{
+  "success": false,
+  "message": "Username sudah digunakan",
+  "data": null,
+  "timestamp": "2025-12-21T10:30:00"
+}
+```
+
+### Server Error (500)
+```json
+{
+  "success": false,
+  "message": "Internal server error",
+  "data": null,
+  "timestamp": "2025-12-21T10:30:00"
+}
+```
+
+---
+
+## 🔧 Frontend Integration Example (JavaScript/TypeScript)
+
+### API Service Setup
+
+```javascript
+const API_BASE_URL = 'http://localhost:9090/api';
+
+// Helper function untuk API calls
+async function apiCall(endpoint, options = {}) {
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+    ...options,
+  });
+  
+  const data = await response.json();
+  
+  if (!data.success) {
+    throw new Error(data.message);
+  }
+  
+  return data;
+}
+
+// Auth Functions
+async function signup(username, email, password, displayName = null) {
+  return apiCall('/auth/signup', {
+    method: 'POST',
+    body: JSON.stringify({ username, email, password, displayName }),
+  });
+}
+
+async function signin(usernameOrEmail, password) {
+  return apiCall('/auth/signin', {
+    method: 'POST',
+    body: JSON.stringify({ usernameOrEmail, password }),
+  });
+}
+
+async function checkUsername(username) {
+  return apiCall(`/auth/check/username/${username}`);
+}
+
+async function checkEmail(email) {
+  return apiCall(`/auth/check/email/${encodeURIComponent(email)}`);
+}
+
+async function getUser(username) {
+  return apiCall(`/auth/user/${username}`);
+}
+
+// Game Save Functions
+async function saveGame(userId, slotId, saveData) {
+  return apiCall('/save', {
+    method: 'POST',
+    body: JSON.stringify({ userId, slotId, saveData }),
+  });
+}
+
+async function loadGame(userId, slotId) {
+  return apiCall(`/save/${userId}/${slotId}`);
+}
+
+async function getAllSlots(userId) {
+  return apiCall(`/save/${userId}/slots`);
+}
+
+async function deleteSlot(userId, slotId) {
+  return apiCall(`/save/${userId}/${slotId}`, {
+    method: 'DELETE',
+  });
+}
+
+async function deleteAllSlots(userId) {
+  return apiCall(`/save/${userId}`, {
+    method: 'DELETE',
+  });
+}
+
+async function checkSlotExists(userId, slotId) {
+  return apiCall(`/save/${userId}/${slotId}/exists`);
+}
+
+// Health Check
+async function healthCheck() {
+  return apiCall('/health');
+}
+```
+
+### Usage Example
+
+```javascript
+// Login
+try {
+  const result = await signin('player123', 'password123');
+  console.log('User:', result.data.user);
+  
+  // Save user info to localStorage
+  localStorage.setItem('user', JSON.stringify(result.data.user));
+} catch (error) {
+  console.error('Login failed:', error.message);
+}
+
+// Save Game
+try {
+  const gameState = {
+    playerState: {
+      currentMap: 'forest_level',
+      posX: 100,
+      posY: 200,
+      health: 100
+    },
+    stats: {
+      allTimeDeathCount: 5,
+      allTimeCompletedTask: 10
+    }
+  };
+  
+  await saveGame('player123', 1, gameState);
+  console.log('Game saved!');
+} catch (error) {
+  console.error('Save failed:', error.message);
+}
+
+// Load Game
+try {
+  const result = await loadGame('player123', 1);
+  console.log('Game data:', result.data.saveData);
+} catch (error) {
+  console.error('Load failed:', error.message);
+}
+```
+
+---
+
+## 📋 Endpoint Summary
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/auth/signup` | Registrasi user baru |
+| `POST` | `/api/auth/signin` | Login user |
+| `GET` | `/api/auth/check/username/{username}` | Cek ketersediaan username |
+| `GET` | `/api/auth/check/email/{email}` | Cek ketersediaan email |
+| `GET` | `/api/auth/user/{username}` | Get user by username |
+| `POST` | `/api/save` | Simpan game |
+| `GET` | `/api/save/{userId}/{slotId}` | Load game dari slot |
+| `GET` | `/api/save/{userId}/slots` | Get semua slot info |
+| `DELETE` | `/api/save/{userId}/{slotId}` | Hapus slot tertentu |
+| `DELETE` | `/api/save/{userId}` | Hapus semua slot user |
+| `GET` | `/api/save/{userId}/{slotId}/exists` | Cek apakah slot ada |
+| `GET` | `/api/health` | Health check |
+| `GET` | `/api/ping` | Ping endpoint |
 

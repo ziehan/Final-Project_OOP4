@@ -1,14 +1,15 @@
 package com.isthereanyone.frontend.network.dto;
 
 /**
- * DTO untuk response autentikasi dari backend
+ * Response DTO untuk authentication (login/signup)
  */
 public class AuthResponse {
     private String message;
     private UserResponse user;
     private String token;
 
-    public AuthResponse() {}
+    public AuthResponse() {
+    }
 
     public String getMessage() {
         return message;

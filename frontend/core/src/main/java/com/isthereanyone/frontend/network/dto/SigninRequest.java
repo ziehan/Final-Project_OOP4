@@ -1,8 +1,5 @@
 package com.isthereanyone.frontend.network.dto;
 
-/**
- * DTO untuk request login ke backend
- */
 public class SigninRequest {
     private String usernameOrEmail;
     private String password;

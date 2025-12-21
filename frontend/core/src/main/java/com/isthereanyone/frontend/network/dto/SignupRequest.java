@@ -1,8 +1,5 @@
 package com.isthereanyone.frontend.network.dto;
 
-/**
- * DTO untuk request registrasi ke backend
- */
 public class SignupRequest {
     private String username;
     private String email;
@@ -10,12 +7,6 @@ public class SignupRequest {
     private String displayName;
 
     public SignupRequest() {}
-
-    public SignupRequest(String username, String email, String password) {
-        this.username = username;
-        this.email = email;
-        this.password = password;
-    }
 
     public SignupRequest(String username, String email, String password, String displayName) {
         this.username = username;

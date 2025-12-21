@@ -1,14 +1,10 @@
 package com.isthereanyone.frontend.network.dto;
 
-/**
- * DTO untuk data user dari backend
- */
 public class UserResponse {
     private Long id;
     private String username;
     private String email;
     private String displayName;
-    private String createdAt;
 
     public UserResponse() {}
 
@@ -42,14 +38,6 @@ public class UserResponse {
 
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
-    }
-
-    public String getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(String createdAt) {
-        this.createdAt = createdAt;
     }
 }
 

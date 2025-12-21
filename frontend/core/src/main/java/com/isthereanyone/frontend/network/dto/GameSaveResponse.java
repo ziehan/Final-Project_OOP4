@@ -2,9 +2,6 @@ package com.isthereanyone.frontend.network.dto;
 
 import java.util.Map;
 
-/**
- * DTO untuk response data game save dari backend
- */
 public class GameSaveResponse {
     private String userId;
     private Integer slotId;

@@ -4,9 +4,14 @@ import com.isthereanyone.frontend.network.ApiService;
 import com.isthereanyone.frontend.network.NetworkCallback;
 import com.isthereanyone.frontend.network.dto.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * NetworkManager - Manages all network communications with backend
+ * Provides both sync and async methods for flexibility
+ */
 public class NetworkManager {
     private static NetworkManager instance;
     private final ApiService apiService;
@@ -28,10 +33,9 @@ public class NetworkManager {
         return instance;
     }
 
-    public void signup(String username, String email, String password, String displayName,
-                       NetworkCallback<ApiResponse<AuthResponse>> callback) {
-        SignupRequest request = new SignupRequest(username, email, password, displayName);
-        apiService.signup(request, new NetworkCallback<ApiResponse<AuthResponse>>() {
+    public void login(String usernameOrEmail, String password, NetworkCallback<ApiResponse<AuthResponse>> callback) {
+        SigninRequest request = new SigninRequest(usernameOrEmail, password);
+        apiService.signin(request, new NetworkCallback<ApiResponse<AuthResponse>>() {
             @Override
             public void onSuccess(ApiResponse<AuthResponse> result) {
                 if (result.isSuccess() && result.getData() != null) {
@@ -47,10 +51,10 @@ public class NetworkManager {
         });
     }
 
-    public void login(String usernameOrEmail, String password,
-                      NetworkCallback<ApiResponse<AuthResponse>> callback) {
-        SigninRequest request = new SigninRequest(usernameOrEmail, password);
-        apiService.signin(request, new NetworkCallback<ApiResponse<AuthResponse>>() {
+    public void signup(String username, String email, String password, String displayName,
+                       NetworkCallback<ApiResponse<AuthResponse>> callback) {
+        SignupRequest request = new SignupRequest(username, email, password, displayName);
+        apiService.signup(request, new NetworkCallback<ApiResponse<AuthResponse>>() {
             @Override
             public void onSuccess(ApiResponse<AuthResponse> result) {
                 if (result.isSuccess() && result.getData() != null) {
@@ -71,14 +75,6 @@ public class NetworkManager {
         this.authToken = null;
         this.isLoggedIn = false;
         System.out.println("[NetworkManager] User logged out");
-    }
-
-    public void checkUsername(String username, NetworkCallback<ApiResponse<Boolean>> callback) {
-        apiService.checkUsername(username, callback);
-    }
-
-    public void checkEmail(String email, NetworkCallback<ApiResponse<Boolean>> callback) {
-        apiService.checkEmail(email, callback);
     }
 
     public void saveGame(int slotId, Map<String, Object> saveData,
@@ -123,14 +119,7 @@ public class NetworkManager {
         apiService.deleteSlot(String.valueOf(currentUser.getId()), slotId, callback);
     }
 
-    public void checkSlotExists(int slotId, NetworkCallback<ApiResponse<Boolean>> callback) {
-        if (!isLoggedIn || currentUser == null) {
-            callback.onFailure("User not logged in");
-            return;
-        }
-
-        apiService.checkSlotExists(String.valueOf(currentUser.getId()), slotId, callback);
-    }
+    // ==================== HEALTH CHECK ====================
 
     public void ping(NetworkCallback<String> callback) {
         apiService.ping(callback);
@@ -139,6 +128,8 @@ public class NetworkManager {
     public void healthCheck(NetworkCallback<ApiResponse<Map<String, Object>>> callback) {
         apiService.healthCheck(callback);
     }
+
+    // ==================== GETTERS ====================
 
     public boolean isLoggedIn() {
         return isLoggedIn;
@@ -164,10 +155,50 @@ public class NetworkManager {
         return currentUser != null ? currentUser.getDisplayName() : null;
     }
 
+    // ==================== HELPER METHODS ====================
+
     private void handleAuthSuccess(AuthResponse authResponse) {
         this.currentUser = authResponse.getUser();
         this.authToken = authResponse.getToken();
         this.isLoggedIn = true;
         System.out.println("[NetworkManager] User logged in: " + currentUser.getUsername());
+    }
+
+    // ==================== LEGACY SYNC METHODS (for backward compatibility) ====================
+
+    /**
+     * @deprecated Use async login() with callback instead
+     */
+    @Deprecated
+    public boolean login(String username, String password) {
+        System.out.println("[LOGIN] " + username + " (sync method - use async for real backend)");
+        return true;
+    }
+
+    /**
+     * @deprecated Use async signup() with callback instead
+     */
+    @Deprecated
+    public boolean signup(String username, String password) {
+        System.out.println("[SIGNUP] " + username + " (sync method - use async for real backend)");
+        return true;
+    }
+
+    /**
+     * @deprecated Use async getAllSlots() with callback instead
+     */
+    @Deprecated
+    public boolean loadSaveSlots(String username) {
+        System.out.println("[LOAD SLOTS] " + username + " (sync method - use async for real backend)");
+        return true;
+    }
+
+    /**
+     * @deprecated Use async saveGame() with callback instead
+     */
+    @Deprecated
+    public boolean saveGameData(String username, int slotNumber, SaveSlotManager.SaveSlotData saveData) {
+        System.out.println("[SAVE] Slot " + slotNumber + " (sync method - use async for real backend)");
+        return true;
     }
 }

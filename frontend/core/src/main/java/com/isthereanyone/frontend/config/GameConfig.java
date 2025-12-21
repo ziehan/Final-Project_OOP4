@@ -8,8 +8,6 @@ public class GameConfig {
     public static final float VIEWPORT_WIDTH = 640f;
     public static final float VIEWPORT_HEIGHT = 360f;
 
-    // Backend API Configuration
-    // Ubah ke IP server production jika deploy
     public static final String API_BASE_URL = "http://localhost:9090/api";
 
     // Connection settings
