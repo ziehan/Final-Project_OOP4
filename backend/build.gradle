@@ -9,9 +9,8 @@ version = '0.0.1-SNAPSHOT'
 description = 'Is There Anyone - Game Backend'
 
 java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
+    sourceCompatibility = '17'
+    targetCompatibility = '17'
 }
 
 repositories {
@@ -25,14 +24,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-security'
 
-    // Dotenv untuk membaca .env file
-    implementation 'io.github.cdimascio:dotenv-java:3.0.0'
-
     // PostgreSQL Driver (untuk Neon Console / Production)
     runtimeOnly 'org.postgresql:postgresql'
-
-    // H2 Database (untuk development/testing)
-    runtimeOnly 'com.h2database:h2'
 
     // Hibernate Types untuk JSONB support
     implementation 'io.hypersistence:hypersistence-utils-hibernate-63:3.7.3'
@@ -53,3 +46,12 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+bootJar {
+    archiveFileName = 'app.jar'
+}
+
+jar {
+    enabled = false
+}
+
