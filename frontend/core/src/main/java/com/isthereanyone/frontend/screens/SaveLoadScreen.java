@@ -11,8 +11,13 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector3;
 import com.isthereanyone.frontend.config.GameConfig;
 import com.isthereanyone.frontend.managers.AuthenticationManager;
+import com.isthereanyone.frontend.managers.GameSaveManager;
+import com.isthereanyone.frontend.managers.NetworkManager;
 import com.isthereanyone.frontend.managers.SaveSlotManager;
 import com.isthereanyone.frontend.managers.ScreenManager;
+import com.isthereanyone.frontend.network.NetworkCallback;
+import com.isthereanyone.frontend.network.dto.ApiResponse;
+import com.isthereanyone.frontend.network.dto.GameSaveResponse;
 
 public class SaveLoadScreen extends BaseScreen {
     private ShapeRenderer shapeRenderer;
@@ -73,6 +78,56 @@ public class SaveLoadScreen extends BaseScreen {
         username = AuthenticationManager.getInstance().getCurrentUsername();
         saveSlotManager.loadSavesForUser(username);
         selectedSlot = 0;
+
+        // Load slot data from backend
+        loadSlotDataFromBackend();
+    }
+
+    /**
+     * Load HP and other data from backend for each slot (sequentially)
+     */
+    private void loadSlotDataFromBackend() {
+        loadSlotData(1);
+    }
+
+    private void loadSlotData(final int slotId) {
+        if (slotId > 3) return; // Done loading all slots
+
+        Gdx.app.log("SLOT_LOAD", "Loading data for slot " + slotId);
+        NetworkManager.getInstance().loadGame(slotId, new NetworkCallback<ApiResponse<GameSaveResponse>>() {
+            @Override
+            public void onSuccess(ApiResponse<GameSaveResponse> result) {
+                if (result.isSuccess() && result.getData() != null && result.getData().getSaveData() != null) {
+                    java.util.Map<String, Object> saveData = result.getData().getSaveData();
+                    SaveSlotManager.SaveSlotData slot = saveSlotManager.getSlot(slotId);
+
+                    if (slot != null) {
+                        slot.setHasData(true);
+
+                        // Get HP from playerState
+                        if (saveData.containsKey("playerState")) {
+                            @SuppressWarnings("unchecked")
+                            java.util.Map<String, Object> playerState =
+                                (java.util.Map<String, Object>) saveData.get("playerState");
+                            if (playerState != null && playerState.containsKey("hp")) {
+                                Object hpObj = playerState.get("hp");
+                                if (hpObj instanceof Number) {
+                                    slot.setPlayerHP(((Number) hpObj).intValue());
+                                }
+                            }
+                        }
+                    }
+                }
+                // Load next slot
+                loadSlotData(slotId + 1);
+            }
+
+            @Override
+            public void onFailure(String error) {
+                // Continue to next slot even if this one fails
+                loadSlotData(slotId + 1);
+            }
+        });
     }
 
     @Override
@@ -239,6 +294,8 @@ public class SaveLoadScreen extends BaseScreen {
     private void handleNewGame() {
         saveSlotManager.selectSlot(selectedSlot + 1);
         if (saveSlotManager.newGame()) {
+            // Mark as new game - will use Tiled spawn point
+            GameSaveManager.getInstance().startNewGame();
             setActionMessage("Starting new game in slot " + (selectedSlot + 1) + "...");
             Gdx.app.postRunnable(() -> {
                 try { Thread.sleep(800); } catch (InterruptedException e) {}
@@ -248,17 +305,31 @@ public class SaveLoadScreen extends BaseScreen {
     }
 
     private void handleLoadGame() {
-        saveSlotManager.selectSlot(selectedSlot + 1);
-        SaveSlotManager.SaveSlotData data = saveSlotManager.loadGame();
-        if (data != null) {
-            setActionMessage("Loading game from slot " + (selectedSlot + 1) + "...");
-            Gdx.app.postRunnable(() -> {
-                try { Thread.sleep(800); } catch (InterruptedException e) {}
-                ScreenManager.getInstance().setScreen(new PlayScreen());
-            });
-        } else {
-            setActionMessage("Slot is empty! Press N for new game.");
-        }
+        int slotId = selectedSlot + 1;
+        saveSlotManager.selectSlot(slotId);
+
+        setActionMessage("Loading game from slot " + slotId + "...");
+        Gdx.app.log("HANDLE_LOAD", "Starting load for slot " + slotId);
+
+        // Load from backend using GameSaveManager
+        GameSaveManager.getInstance().loadGame(slotId, new com.isthereanyone.frontend.network.NetworkCallback<com.isthereanyone.frontend.network.dto.SaveData>() {
+            @Override
+            public void onSuccess(com.isthereanyone.frontend.network.dto.SaveData saveData) {
+                Gdx.app.log("HANDLE_LOAD", "SUCCESS - Loaded slot " + slotId + ", position: " + saveData.getPlayerX() + ", " + saveData.getPlayerY());
+                Gdx.app.postRunnable(() -> {
+                    // Data is already set in GameSaveManager, now create PlayScreen
+                    ScreenManager.getInstance().setScreen(new PlayScreen());
+                });
+            }
+
+            @Override
+            public void onFailure(String error) {
+                Gdx.app.log("HANDLE_LOAD", "FAILED - slot " + slotId + ": " + error);
+                Gdx.app.postRunnable(() -> {
+                    setActionMessage("Slot " + slotId + " is empty or failed to load.");
+                });
+            }
+        });
     }
 
     private void setActionMessage(String msg) {

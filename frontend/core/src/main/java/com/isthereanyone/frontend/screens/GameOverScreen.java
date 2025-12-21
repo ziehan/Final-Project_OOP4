@@ -48,7 +48,7 @@ public class GameOverScreen extends BaseScreen {
             (GameConfig.VIEWPORT_WIDTH - layout.width) / 2,
             (GameConfig.VIEWPORT_HEIGHT / 2) + 100);
 
-        layout.setText(subFont, "Press ENTER to Restart");
+        layout.setText(subFont, "Press ENTER to Continue");
         subFont.draw(batch, layout,
             (GameConfig.VIEWPORT_WIDTH - layout.width) / 2,
             (GameConfig.VIEWPORT_HEIGHT / 2));
@@ -56,7 +56,7 @@ public class GameOverScreen extends BaseScreen {
         batch.end();
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
-            ScreenManager.getInstance().setScreen(new MainMenuScreen());
+            ScreenManager.getInstance().setScreen(new SaveSlotScreen());
         }
     }
 

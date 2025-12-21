@@ -59,7 +59,7 @@ public class WinScreen extends BaseScreen {
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
             EventManager.getInstance();
-            ScreenManager.getInstance().setScreen(new MainMenuScreen());
+            ScreenManager.getInstance().setScreen(new SaveSlotScreen());
         }
     }
 

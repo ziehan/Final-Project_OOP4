@@ -52,12 +52,17 @@ public class GameSaveManager {
 
         // Player Data
         save.setPlayerHp(player.health);
-        save.setMaxHp(3); // Default max HP
+        save.setMaxHp(2); // Max HP is 2
         save.setPlayerX(player.position.x);
         save.setPlayerY(player.position.y);
         save.setHiding(player.isHidden);
 
+        // Stamina Data
+        save.setPlayerStamina(player.currentStamina);
+        save.setMaxStamina(player.maxStamina);
+
         Gdx.app.log("SAVE", "Saving player at: " + player.position.x + ", " + player.position.y);
+        Gdx.app.log("SAVE", "Saving stamina: " + player.currentStamina + "/" + player.maxStamina);
 
         // Ghost Data
         if (ghost != null) {
@@ -89,20 +94,28 @@ public class GameSaveManager {
         save.setTotalTasksRequired(world.tasks.size);
         Gdx.app.log("SAVE", "Saving " + completedCount + "/" + world.tasks.size + " completed tasks");
 
-        // Inventory Data
-        if (player.inventory != null) {
-            for (RitualItem item : world.itemsOnGround) {
-                if (item.isCollected) {
-                    ItemData id = new ItemData();
-                    id.setItemId(item.getType().name());
-                    id.setItemName(item.getType().name());
-                    id.setItemType("quest_item");
-                    id.setQuantity(1);
-                    save.addItem(id);
-                }
+        // Inventory Data - Save from player's inventory (items player is carrying)
+        if (player.inventory != null && player.inventory.getItems() != null) {
+            for (com.isthereanyone.frontend.entities.items.ItemType itemType : player.inventory.getItems()) {
+                ItemData id = new ItemData();
+                id.setItemId(itemType.name());
+                id.setItemName(itemType.name());
+                id.setItemType("quest_item");
+                id.setQuantity(1);
+                id.setEquipped(true); // Player is carrying it
+                save.addItem(id);
             }
-            Gdx.app.log("SAVE", "Saving " + save.getInventoryItems().size() + " inventory items");
+            Gdx.app.log("SAVE", "Saving " + player.inventory.getItems().size() + " inventory items from player");
         }
+
+        // Also save which items on ground are collected (so they don't respawn)
+        List<String> collectedItemIds = new ArrayList<>();
+        for (RitualItem item : world.itemsOnGround) {
+            if (item.isCollected) {
+                collectedItemIds.add(item.getType().name());
+            }
+        }
+        save.setCompletedLevels(new ArrayList<>()); // Reuse this for collected ground items tracking
 
         // Spawn Settings - PENTING!
         save.setUseCustomSpawn(true); // Load dari save = pakai posisi dari save
@@ -206,6 +219,15 @@ public class GameSaveManager {
         player.isHidden = save.isHiding();
         Gdx.app.log("APPLY", "Player HP: " + player.health);
 
+        // Restore stamina
+        if (save.getPlayerStamina() != null) {
+            player.currentStamina = save.getPlayerStamina();
+        }
+        if (save.getMaxStamina() != null) {
+            player.maxStamina = save.getMaxStamina();
+        }
+        Gdx.app.log("APPLY", "Player Stamina: " + player.currentStamina + "/" + player.maxStamina);
+
         // Ghost positions
         List<GhostData> ghostsData = save.getGhosts();
         if (ghost != null && ghostsData != null && !ghostsData.isEmpty()) {
@@ -227,13 +249,31 @@ public class GameSaveManager {
             Gdx.app.log("APPLY", "Restored " + save.getCompletedTaskIds().size() + " completed tasks");
         }
 
-        // Inventory - mark collected items
-        if (save.getInventoryItems() != null) {
+        // Inventory - restore items to player's inventory AND mark ground items as collected
+        if (save.getInventoryItems() != null && !save.getInventoryItems().isEmpty()) {
+            // Clear player inventory first
+            while (!player.inventory.getItems().isEmpty()) {
+                player.inventory.getItems().remove(0);
+            }
+
             for (ItemData itemData : save.getInventoryItems()) {
-                for (RitualItem item : world.itemsOnGround) {
-                    if (item.getType().name().equals(itemData.getItemId())) {
-                        item.isCollected = true;
+                // Add to player inventory
+                try {
+                    com.isthereanyone.frontend.entities.items.ItemType itemType =
+                        com.isthereanyone.frontend.entities.items.ItemType.valueOf(itemData.getItemId());
+                    player.inventory.addItem(itemType);
+                    Gdx.app.log("APPLY", "Added " + itemType.name() + " to player inventory");
+
+                    // Mark corresponding ground item as collected
+                    for (RitualItem groundItem : world.itemsOnGround) {
+                        if (groundItem.getType() == itemType && !groundItem.isCollected) {
+                            groundItem.isCollected = true;
+                            Gdx.app.log("APPLY", "Marked ground item " + itemType.name() + " as collected");
+                            break; // Only mark one item of this type
+                        }
                     }
+                } catch (IllegalArgumentException e) {
+                    Gdx.app.error("APPLY", "Unknown item type: " + itemData.getItemId());
                 }
             }
             Gdx.app.log("APPLY", "Restored " + save.getInventoryItems().size() + " inventory items");
@@ -269,11 +309,17 @@ public class GameSaveManager {
         Map<String, Object> playerState = new HashMap<>();
         playerState.put("hp", save.getPlayerHp());
         playerState.put("maxHp", save.getMaxHp());
+        playerState.put("stamina", save.getPlayerStamina());
+        playerState.put("maxStamina", save.getMaxStamina());
         playerState.put("posX", save.getPlayerX());
         playerState.put("posY", save.getPlayerY());
         playerState.put("direction", save.getPlayerDirection());
         playerState.put("isHiding", save.isHiding());
         map.put("playerState", playerState);
+
+        // Also add stamina at root level for compatibility
+        map.put("playerStamina", save.getPlayerStamina());
+        map.put("maxStamina", save.getMaxStamina());
 
         // Ghosts
         List<Map<String, Object>> ghostsList = new ArrayList<>();
@@ -358,12 +404,15 @@ public class GameSaveManager {
 
                 save.setPlayerHp(getInt(ps, "hp", 3));
                 save.setMaxHp(getInt(ps, "maxHp", 3));
+                save.setPlayerStamina(getFloat(ps, "stamina", 100f));
+                save.setMaxStamina(getFloat(ps, "maxStamina", 100f));
                 save.setPlayerX(getFloat(ps, "posX", 0));
                 save.setPlayerY(getFloat(ps, "posY", 0));
                 save.setPlayerDirection(getString(ps, "direction", "down"));
                 save.setHiding(getBool(ps, "isHiding", false));
 
                 Gdx.app.log("PARSE", "Parsed player position: " + save.getPlayerX() + ", " + save.getPlayerY());
+                Gdx.app.log("PARSE", "Parsed player stamina: " + save.getPlayerStamina() + "/" + save.getMaxStamina());
 
                 // Also set spawn from playerState if useCustomSpawn not set elsewhere
                 if (save.getPlayerX() != 0 || save.getPlayerY() != 0) {
@@ -386,6 +435,14 @@ public class GameSaveManager {
                 save.setCustomSpawnX(save.getPlayerX());
                 save.setCustomSpawnY(save.getPlayerY());
             }
+        }
+
+        // Parse stamina from root level (fallback/additional)
+        if (map.containsKey("playerStamina")) {
+            save.setPlayerStamina(getFloat(map, "playerStamina", 100f));
+        }
+        if (map.containsKey("maxStamina")) {
+            save.setMaxStamina(getFloat(map, "maxStamina", 100f));
         }
 
         // Ghosts
