@@ -1,8 +1,5 @@
 package com.isthereanyone.backend.exception;
 
-/**
- * Exception untuk resource yang tidak ditemukan
- */
 public class ResourceNotFoundException extends RuntimeException {
 
     public ResourceNotFoundException(String message) {

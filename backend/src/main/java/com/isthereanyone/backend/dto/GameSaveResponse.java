@@ -3,9 +3,6 @@ package com.isthereanyone.backend.dto;
 import java.time.LocalDateTime;
 import java.util.Map;
 
-/**
- * DTO untuk response game save data
- */
 public class GameSaveResponse {
 
     private String userId;
@@ -13,7 +10,6 @@ public class GameSaveResponse {
     private Map<String, Object> saveData;
     private LocalDateTime lastUpdated;
 
-    // Constructor
     public GameSaveResponse() {}
 
     public GameSaveResponse(String userId, Integer slotId, Map<String, Object> saveData, LocalDateTime lastUpdated) {
@@ -23,7 +19,6 @@ public class GameSaveResponse {
         this.lastUpdated = lastUpdated;
     }
 
-    // Getters and Setters
     public String getUserId() {
         return userId;
     }
