@@ -15,6 +15,8 @@ public class GameSaveDataStructure {
     // ==================== PLAYER DATA ====================
     private Integer playerHp;
     private Integer maxHp;
+    private Float playerStamina;
+    private Float maxStamina;
     private Float playerX;
     private Float playerY;
     private String playerDirection; // "up", "down", "left", "right"
@@ -77,6 +79,12 @@ public class GameSaveDataStructure {
 
     public Integer getMaxHp() { return maxHp; }
     public void setMaxHp(Integer maxHp) { this.maxHp = maxHp; }
+
+    public Float getPlayerStamina() { return playerStamina; }
+    public void setPlayerStamina(Float playerStamina) { this.playerStamina = playerStamina; }
+
+    public Float getMaxStamina() { return maxStamina; }
+    public void setMaxStamina(Float maxStamina) { this.maxStamina = maxStamina; }
 
     public Float getPlayerX() { return playerX; }
     public void setPlayerX(Float playerX) { this.playerX = playerX; }

@@ -16,6 +16,8 @@ public class SaveData {
     // ==================== PLAYER DATA ====================
     private int playerHp;
     private int maxHp;
+    private float playerStamina;
+    private float maxStamina;
     private float playerX;
     private float playerY;
     private String playerDirection; // "up", "down", "left", "right"
@@ -63,6 +65,8 @@ public class SaveData {
         // Initialize defaults
         this.playerHp = 3;
         this.maxHp = 3;
+        this.playerStamina = 100f;
+        this.maxStamina = 100f;
         this.currentLevel = 1;
         this.ghosts = new ArrayList<>();
         this.tasks = new ArrayList<>();
@@ -81,6 +85,12 @@ public class SaveData {
 
     public int getMaxHp() { return maxHp; }
     public void setMaxHp(int maxHp) { this.maxHp = maxHp; }
+
+    public float getPlayerStamina() { return playerStamina; }
+    public void setPlayerStamina(float playerStamina) { this.playerStamina = playerStamina; }
+
+    public float getMaxStamina() { return maxStamina; }
+    public void setMaxStamina(float maxStamina) { this.maxStamina = maxStamina; }
 
     public float getPlayerX() { return playerX; }
     public void setPlayerX(float playerX) { this.playerX = playerX; }

@@ -2,6 +2,7 @@ package com.isthereanyone.frontend.managers;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 
 /**
  * AudioManager - Handles background music and sound effects
@@ -11,15 +12,43 @@ public class AudioManager {
 
     private Music backgroundMusic;
     private float musicVolume = 0.5f; // Default volume 50%
+    private float sfxVolume = 0.8f; // Default SFX volume 80%
     private boolean isMuted = false;
 
-    private AudioManager() {}
+    // Sound Effects
+    private Sound runningSound;
+    private Sound stabSound;
+    private Sound wingsSound;
+
+    // SFX playback tracking
+    private long runningSoundId = -1;
+    private long wingsSoundId = -1;
+    private boolean isRunningPlaying = false;
+    private boolean isWingsPlaying = false;
+
+    private AudioManager() {
+        loadSoundEffects();
+    }
 
     public static AudioManager getInstance() {
         if (instance == null) {
             instance = new AudioManager();
         }
         return instance;
+    }
+
+    /**
+     * Load all sound effects
+     */
+    private void loadSoundEffects() {
+        try {
+            runningSound = Gdx.audio.newSound(Gdx.files.internal("running sfx 1.mp3"));
+            stabSound = Gdx.audio.newSound(Gdx.files.internal("stab sfx 1.mp3"));
+            wingsSound = Gdx.audio.newSound(Gdx.files.internal("wings sfx.mp3"));
+            Gdx.app.log("AUDIO", "Sound effects loaded");
+        } catch (Exception e) {
+            Gdx.app.error("AUDIO", "Failed to load sound effects: " + e.getMessage());
+        }
     }
 
     /**
@@ -106,6 +135,96 @@ public class AudioManager {
         return isMuted;
     }
 
+    // ==================== SOUND EFFECTS ====================
+
+    /**
+     * Set SFX volume (0.0 to 1.0)
+     */
+    public void setSfxVolume(float volume) {
+        this.sfxVolume = Math.max(0f, Math.min(1f, volume));
+    }
+
+    /**
+     * Get current SFX volume
+     */
+    public float getSfxVolume() {
+        return sfxVolume;
+    }
+
+    /**
+     * Play running sound (looping)
+     */
+    public void playRunningSound() {
+        if (isMuted || runningSound == null) return;
+        if (!isRunningPlaying) {
+            runningSoundId = runningSound.loop(sfxVolume * 0.5f); // Lower volume for running
+            isRunningPlaying = true;
+        }
+    }
+
+    /**
+     * Stop running sound
+     */
+    public void stopRunningSound() {
+        if (runningSound != null && isRunningPlaying) {
+            runningSound.stop(runningSoundId);
+            isRunningPlaying = false;
+            runningSoundId = -1;
+        }
+    }
+
+    /**
+     * Check if running sound is playing
+     */
+    public boolean isRunningPlaying() {
+        return isRunningPlaying;
+    }
+
+    /**
+     * Play stab/hit sound (one shot)
+     */
+    public void playStabSound() {
+        if (isMuted || stabSound == null) return;
+        stabSound.play(sfxVolume);
+    }
+
+    /**
+     * Play ghost wings sound (looping)
+     */
+    public void playWingsSound() {
+        if (isMuted || wingsSound == null) return;
+        if (!isWingsPlaying) {
+            wingsSoundId = wingsSound.loop(sfxVolume * 0.4f); // Lower volume for wings
+            isWingsPlaying = true;
+        }
+    }
+
+    /**
+     * Stop ghost wings sound
+     */
+    public void stopWingsSound() {
+        if (wingsSound != null && isWingsPlaying) {
+            wingsSound.stop(wingsSoundId);
+            isWingsPlaying = false;
+            wingsSoundId = -1;
+        }
+    }
+
+    /**
+     * Check if wings sound is playing
+     */
+    public boolean isWingsPlaying() {
+        return isWingsPlaying;
+    }
+
+    /**
+     * Stop all SFX
+     */
+    public void stopAllSfx() {
+        stopRunningSound();
+        stopWingsSound();
+    }
+
     /**
      * Dispose resources
      */
@@ -114,6 +233,18 @@ public class AudioManager {
             backgroundMusic.stop();
             backgroundMusic.dispose();
             backgroundMusic = null;
+        }
+        if (runningSound != null) {
+            runningSound.dispose();
+            runningSound = null;
+        }
+        if (stabSound != null) {
+            stabSound.dispose();
+            stabSound = null;
+        }
+        if (wingsSound != null) {
+            wingsSound.dispose();
+            wingsSound = null;
         }
     }
 }

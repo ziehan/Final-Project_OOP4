@@ -17,6 +17,7 @@ import com.isthereanyone.frontend.entities.Player;
 import com.isthereanyone.frontend.entities.ghost.Ghost;
 import com.isthereanyone.frontend.entities.items.RitualItem;
 import com.isthereanyone.frontend.entities.tasks.BaseTask;
+import com.isthereanyone.frontend.managers.AudioManager;
 import com.isthereanyone.frontend.managers.GameWorld;
 import com.isthereanyone.frontend.managers.ScreenManager;
 import com.isthereanyone.frontend.screens.GameOverScreen;
@@ -277,6 +278,9 @@ public class RoamingState implements PlayState {
     }
 
     private void handleDeath(float delta, Player player) {
+        // Stop all SFX when dead
+        AudioManager.getInstance().stopAllSfx();
+
         player.update(delta);
         screen.getWorld().ghost.update(player, delta);
         deathTimer += delta;
@@ -326,12 +330,32 @@ public class RoamingState implements PlayState {
     }
 
     private void handleGhostAndAnimation(float delta, Player player) {
-        screen.getWorld().ghost.update(player, delta);
-        float dist = screen.getWorld().ghost.getPosition().dst(player.position);
-        if (dist < 30f && !screen.getWorld().ghost.isCoolingDown()) screen.getWorld().ghost.triggerAttackCooldown();
-        if (screen.getWorld().ghost.shouldDealDamage()) {
-            if (dist < 50f) player.takeDamage();
-            screen.getWorld().ghost.confirmDamageDealt();
+        Ghost ghost = screen.getWorld().ghost;
+        ghost.update(player, delta);
+
+        // Handle player running SFX
+        if (player.isRunning() && player.isMoving()) {
+            AudioManager.getInstance().playRunningSound();
+        } else {
+            AudioManager.getInstance().stopRunningSound();
+        }
+
+        // Handle ghost wings SFX
+        if (ghost.isMoving()) {
+            AudioManager.getInstance().playWingsSound();
+        } else {
+            AudioManager.getInstance().stopWingsSound();
+        }
+
+        float dist = ghost.getPosition().dst(player.position);
+        if (dist < 30f && !ghost.isCoolingDown()) ghost.triggerAttackCooldown();
+        if (ghost.shouldDealDamage()) {
+            if (dist < 50f) {
+                player.takeDamage();
+                // Play stab/hit sound when player takes damage
+                AudioManager.getInstance().playStabSound();
+            }
+            ghost.confirmDamageDealt();
         }
         AnimatedTiledMapTile.updateAnimationBaseTime();
     }

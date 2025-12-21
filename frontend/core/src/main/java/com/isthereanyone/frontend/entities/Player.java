@@ -26,7 +26,6 @@ public class Player {
     private boolean isInvincible = false;
     private float hurtTimer = 0f;
 
-    public boolean isHidden = false;
 
     public float maxStamina = 100f;
     public float currentStamina = 100f;
@@ -34,7 +33,11 @@ public class Player {
     private float staminaRegen = 15f;
     private boolean isExhausted = false;
     private float regenTimer = 0f;
-    private final float REGEN_DELAY = 0.5f;
+    private final float REGEN_DELAY = 1.0f; // 1 second delay before stamina starts recharging
+
+    // Movement tracking for SFX
+    private boolean isCurrentlyMoving = false;
+    private boolean wasMovingLastFrame = false;
 
     private Animation<TextureRegion>[] idleAnims;
     private Animation<TextureRegion>[] walkAnims;
@@ -183,6 +186,10 @@ public class Player {
         boolean isMoving = direction.len2() > 0;
         boolean wantsRun = currentState == State.RUN;
 
+        // Track movement state change for SFX
+        wasMovingLastFrame = isCurrentlyMoving;
+        isCurrentlyMoving = isMoving;
+
         if (isMoving) {
             if (Math.abs(direction.x) > Math.abs(direction.y)) {
                 facingDirection = (direction.x > 0) ? 2 : 1;
@@ -219,6 +226,27 @@ public class Player {
             case WALK: currentAnimation = walkAnims[facingDirection]; break;
             default:  currentAnimation = idleAnims[facingDirection]; break;
         }
+    }
+
+    /**
+     * Check if player just started moving (for SFX trigger)
+     */
+    public boolean justStartedMoving() {
+        return isCurrentlyMoving && !wasMovingLastFrame;
+    }
+
+    /**
+     * Check if player just stopped moving (for SFX stop)
+     */
+    public boolean justStoppedMoving() {
+        return !isCurrentlyMoving && wasMovingLastFrame;
+    }
+
+    /**
+     * Check if player is currently moving
+     */
+    public boolean isMoving() {
+        return isCurrentlyMoving;
     }
 
     public void setRunningRequest(boolean isShiftPressed) {

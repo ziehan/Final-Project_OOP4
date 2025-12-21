@@ -14,6 +14,8 @@ public class SlotInfo {
     private String currentRoom;
     private Integer playerHp;
     private Integer maxHp;
+    private Float playerStamina;
+    private Float maxStamina;
 
     // Progress info
     private Integer currentLevel;
@@ -46,6 +48,8 @@ public class SlotInfo {
             info.setCurrentRoom(getStringValue(saveData, "currentRoom"));
             info.setPlayerHp(getIntValue(saveData, "playerHp"));
             info.setMaxHp(getIntValue(saveData, "maxHp"));
+            info.setPlayerStamina(getFloatValue(saveData, "playerStamina"));
+            info.setMaxStamina(getFloatValue(saveData, "maxStamina"));
             info.setCurrentLevel(getIntValue(saveData, "currentLevel"));
             info.setDeathCount(getIntValue(saveData, "deathCount"));
             info.setPlayTime(getLongValue(saveData, "playTime"));
@@ -123,6 +127,17 @@ public class SlotInfo {
         }
     }
 
+    private static Float getFloatValue(Map<String, Object> map, String key) {
+        Object value = map.get(key);
+        if (value == null) return null;
+        if (value instanceof Number) return ((Number) value).floatValue();
+        try {
+            return Float.parseFloat(value.toString());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
     public static SlotInfo emptySlot(Integer slotId) {
         SlotInfo info = new SlotInfo();
         info.setSlotId(slotId);
@@ -152,6 +167,12 @@ public class SlotInfo {
 
     public Integer getMaxHp() { return maxHp; }
     public void setMaxHp(Integer maxHp) { this.maxHp = maxHp; }
+
+    public Float getPlayerStamina() { return playerStamina; }
+    public void setPlayerStamina(Float playerStamina) { this.playerStamina = playerStamina; }
+
+    public Float getMaxStamina() { return maxStamina; }
+    public void setMaxStamina(Float maxStamina) { this.maxStamina = maxStamina; }
 
     public Integer getCurrentLevel() { return currentLevel; }
     public void setCurrentLevel(Integer currentLevel) { this.currentLevel = currentLevel; }

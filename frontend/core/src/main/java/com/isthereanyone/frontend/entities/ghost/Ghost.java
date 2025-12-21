@@ -44,6 +44,9 @@ public class Ghost implements GameObserver {
     private Vector2 lastPosition = new Vector2();
     private int facingDirection = 0;
 
+    // Movement tracking for SFX
+    private boolean isGhostMoving = false;
+
     public Ghost(float x, float y) {
         this.position = new Vector2(x, y);
         this.lastPosition.set(x, y);
@@ -131,11 +134,20 @@ public class Ghost implements GameObserver {
         if (Math.abs(moveX) > 0 || Math.abs(moveY) > 0) {
             currentState = (currentStrategy instanceof ChaseStrategy) ? State.RUN : State.WALK;
             updateFacingDirection(moveX, moveY);
+            isGhostMoving = true;
         } else {
             currentState = State.IDLE;
+            isGhostMoving = false;
         }
 
         updateAnimation();
+    }
+
+    /**
+     * Check if ghost is currently moving (for SFX)
+     */
+    public boolean isMoving() {
+        return isGhostMoving;
     }
 
     private void updateFacingDirection(float dx, float dy) {

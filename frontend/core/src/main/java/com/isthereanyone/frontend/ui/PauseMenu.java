@@ -80,8 +80,9 @@ public class PauseMenu {
         titleFont.getData().setScale(0.9f);
         glyphLayout = new GlyphLayout();
 
-        // Sync music volume from AudioManager
+        // Sync volume from AudioManager
         musicVolume = AudioManager.getInstance().getMusicVolume();
+        sfxVolume = AudioManager.getInstance().getSfxVolume();
     }
 
     public void setOnSaveCallback(Runnable callback) {
@@ -220,7 +221,10 @@ public class PauseMenu {
                 musicVolume = Math.max(0f, Math.min(1f, musicVolume + delta));
                 AudioManager.getInstance().setMusicVolume(musicVolume);
                 break;
-            case 2: sfxVolume = Math.max(0f, Math.min(1f, sfxVolume + delta)); break;
+            case 2:
+                sfxVolume = Math.max(0f, Math.min(1f, sfxVolume + delta));
+                AudioManager.getInstance().setSfxVolume(sfxVolume);
+                break;
         }
     }
 
@@ -231,7 +235,10 @@ public class PauseMenu {
                 musicVolume = value;
                 AudioManager.getInstance().setMusicVolume(musicVolume);
                 break;
-            case 2: sfxVolume = value; break;
+            case 2:
+                sfxVolume = value;
+                AudioManager.getInstance().setSfxVolume(sfxVolume);
+                break;
         }
     }
 

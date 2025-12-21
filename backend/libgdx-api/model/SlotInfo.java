@@ -15,6 +15,8 @@ public class SlotInfo {
     private String currentRoom;
     private int playerHp;
     private int maxHp;
+    private float playerStamina;
+    private float maxStamina;
 
     // Progress info
     private int currentLevel;
@@ -56,6 +58,12 @@ public class SlotInfo {
 
     public int getMaxHp() { return maxHp; }
     public void setMaxHp(int maxHp) { this.maxHp = maxHp; }
+
+    public float getPlayerStamina() { return playerStamina; }
+    public void setPlayerStamina(float playerStamina) { this.playerStamina = playerStamina; }
+
+    public float getMaxStamina() { return maxStamina; }
+    public void setMaxStamina(float maxStamina) { this.maxStamina = maxStamina; }
 
     public int getCurrentLevel() { return currentLevel; }
     public void setCurrentLevel(int currentLevel) { this.currentLevel = currentLevel; }
