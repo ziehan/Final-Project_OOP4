@@ -59,7 +59,7 @@
         "walls_and_floor.tsx"
     ],
     "project": "IsThereAnyoneTilemap.tiled-project",
-    "property.type": "string",
+    "property.type": "int",
     "recentFiles": [
         "walls_and_floor.tsx",
         "Interior.tsx",

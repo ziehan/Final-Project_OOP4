@@ -19,6 +19,7 @@ import com.isthereanyone.frontend.input.InputHandler;
 import com.isthereanyone.frontend.managers.GameWorld;
 import com.isthereanyone.frontend.managers.LightingSystem;
 import com.isthereanyone.frontend.managers.SaveSlotManager;
+import com.isthereanyone.frontend.managers.GameSaveManager;
 import com.isthereanyone.frontend.screens.states.PlayState;
 import com.isthereanyone.frontend.screens.states.RoamingState;
 import com.isthereanyone.frontend.ui.PauseButton;
@@ -102,13 +103,26 @@ public class PlayScreen extends BaseScreen {
     private void saveProgress() {
         SaveSlotManager saveManager = SaveSlotManager.getInstance();
         if (saveManager.getCurrentSlot() > 0) {
-            saveManager.saveGame(
-                1,
-                world.player.health,
-                world.player.position.x,
-                world.player.position.y
-            );
-            System.out.println("[SAVE] Progress saved to slot " + saveManager.getCurrentSlot());
+            // Use GameSaveManager for full save with ghost, tasks, inventory
+            GameSaveManager.getInstance().saveGame(saveManager.getCurrentSlot(), world,
+                new com.isthereanyone.frontend.network.NetworkCallback<Boolean>() {
+                    @Override
+                    public void onSuccess(Boolean result) {
+                        System.out.println("[SAVE] Progress saved to backend slot " + saveManager.getCurrentSlot());
+                    }
+
+                    @Override
+                    public void onFailure(String error) {
+                        System.out.println("[SAVE] Backend save failed: " + error + ", saving locally");
+                        // Fallback to local save
+                        saveManager.saveGame(
+                            1,
+                            world.player.health,
+                            world.player.position.x,
+                            world.player.position.y
+                        );
+                    }
+                });
         }
     }
 

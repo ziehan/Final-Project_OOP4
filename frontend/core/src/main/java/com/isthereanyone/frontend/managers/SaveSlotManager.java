@@ -355,7 +355,7 @@ public class SaveSlotManager {
             this.slotNumber = slotNumber;
             this.hasData = false;
             this.playerLevel = 1;
-            this.playerHP = 100;
+            this.playerHP = 2;
             this.playerX = 0f;
             this.playerY = 0f;
             this.lastSavedTime = 0;
@@ -365,7 +365,7 @@ public class SaveSlotManager {
         public void resetData() {
             this.hasData = false;
             this.playerLevel = 1;
-            this.playerHP = 100;
+            this.playerHP = 2;
             this.playerX = 0f;
             this.playerY = 0f;
             this.lastSavedTime = 0;

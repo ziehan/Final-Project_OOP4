@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.isthereanyone.frontend.config.GameConfig;
+import com.isthereanyone.frontend.managers.AudioManager;
 import com.isthereanyone.frontend.managers.ScreenManager;
 import com.isthereanyone.frontend.screens.SaveSlotScreen;
 
@@ -27,7 +28,7 @@ public class PauseMenu {
     private boolean canProcessEsc = false;
 
     private float masterVolume = 0.8f;
-    private float musicVolume = 0.7f;
+    private float musicVolume = 0.5f; // Will be synced from AudioManager
     private float sfxVolume = 0.8f;
 
     private static final float W = GameConfig.VIEWPORT_WIDTH;
@@ -78,6 +79,9 @@ public class PauseMenu {
         titleFont = new BitmapFont();
         titleFont.getData().setScale(0.9f);
         glyphLayout = new GlyphLayout();
+
+        // Sync music volume from AudioManager
+        musicVolume = AudioManager.getInstance().getMusicVolume();
     }
 
     public void setOnSaveCallback(Runnable callback) {
@@ -212,7 +216,10 @@ public class PauseMenu {
     private void adjustVolume(int index, float delta) {
         switch (index) {
             case 0: masterVolume = Math.max(0f, Math.min(1f, masterVolume + delta)); break;
-            case 1: musicVolume = Math.max(0f, Math.min(1f, musicVolume + delta)); break;
+            case 1:
+                musicVolume = Math.max(0f, Math.min(1f, musicVolume + delta));
+                AudioManager.getInstance().setMusicVolume(musicVolume);
+                break;
             case 2: sfxVolume = Math.max(0f, Math.min(1f, sfxVolume + delta)); break;
         }
     }
@@ -220,7 +227,10 @@ public class PauseMenu {
     private void setVolume(int index, float value) {
         switch (index) {
             case 0: masterVolume = value; break;
-            case 1: musicVolume = value; break;
+            case 1:
+                musicVolume = value;
+                AudioManager.getInstance().setMusicVolume(musicVolume);
+                break;
             case 2: sfxVolume = value; break;
         }
     }

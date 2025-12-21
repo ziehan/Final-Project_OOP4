@@ -237,6 +237,6 @@ public class Player {
     }
 
     public Rectangle getBoundingRectangle() {
-        return new Rectangle(position.x + 9, position.y, 14, 10);
+        return new Rectangle(position.x + 11, position.y + 4, 10, 8);
     }
 }

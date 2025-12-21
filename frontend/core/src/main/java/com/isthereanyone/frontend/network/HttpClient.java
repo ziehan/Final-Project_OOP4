@@ -6,6 +6,7 @@ import com.badlogic.gdx.net.HttpRequestBuilder;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonWriter;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -20,7 +21,61 @@ public class HttpClient {
         json.setOutputType(JsonWriter.OutputType.json);
     }
 
+    /**
+     * Custom JSON serialization that handles nested Maps properly
+     */
+    private String toJsonString(Object obj) {
+        if (obj == null) return "null";
+
+        if (obj instanceof Map) {
+            StringBuilder sb = new StringBuilder("{");
+            Map<?, ?> map = (Map<?, ?>) obj;
+            boolean first = true;
+            for (Map.Entry<?, ?> entry : map.entrySet()) {
+                if (!first) sb.append(",");
+                first = false;
+                sb.append("\"").append(entry.getKey()).append("\":");
+                sb.append(toJsonString(entry.getValue()));
+            }
+            sb.append("}");
+            return sb.toString();
+        }
+
+        if (obj instanceof List) {
+            StringBuilder sb = new StringBuilder("[");
+            List<?> list = (List<?>) obj;
+            boolean first = true;
+            for (Object item : list) {
+                if (!first) sb.append(",");
+                first = false;
+                sb.append(toJsonString(item));
+            }
+            sb.append("]");
+            return sb.toString();
+        }
+
+        if (obj instanceof String) {
+            // Escape special characters
+            String str = (String) obj;
+            str = str.replace("\\", "\\\\")
+                     .replace("\"", "\\\"")
+                     .replace("\n", "\\n")
+                     .replace("\r", "\\r")
+                     .replace("\t", "\\t");
+            return "\"" + str + "\"";
+        }
+
+        if (obj instanceof Number || obj instanceof Boolean) {
+            return obj.toString();
+        }
+
+        // For complex objects, use libGDX Json
+        return json.toJson(obj);
+    }
+
     public void get(String endpoint, NetworkCallback<String> callback) {
+        Gdx.app.log("HTTP", "GET " + endpoint);
+
         Net.HttpRequest request = new HttpRequestBuilder()
             .newRequest()
             .method(Net.HttpMethods.GET)
@@ -33,7 +88,25 @@ public class HttpClient {
     }
 
     public void post(String endpoint, Object body, NetworkCallback<String> callback) {
-        String jsonBody = json.toJson(body);
+        String jsonBody;
+
+        // Check if body has saveData (Map) that needs custom serialization
+        if (body instanceof com.isthereanyone.frontend.network.dto.SaveGameRequest) {
+            com.isthereanyone.frontend.network.dto.SaveGameRequest req =
+                (com.isthereanyone.frontend.network.dto.SaveGameRequest) body;
+            StringBuilder sb = new StringBuilder("{");
+            sb.append("\"userId\":").append(toJsonString(req.getUserId())).append(",");
+            sb.append("\"slotId\":").append(req.getSlotId()).append(",");
+            sb.append("\"saveData\":").append(toJsonString(req.getSaveData()));
+            sb.append("}");
+            jsonBody = sb.toString();
+        } else {
+            jsonBody = json.toJson(body);
+        }
+
+        // Debug: Log the JSON being sent
+        Gdx.app.log("HTTP", "POST " + endpoint);
+        Gdx.app.log("HTTP", "Body: " + jsonBody);
 
         Net.HttpRequest request = new HttpRequestBuilder()
             .newRequest()
@@ -80,6 +153,10 @@ public class HttpClient {
             public void handleHttpResponse(Net.HttpResponse httpResponse) {
                 final String response = httpResponse.getResultAsString();
                 final int statusCode = httpResponse.getStatus().getStatusCode();
+
+                // Debug: Log response
+                Gdx.app.log("HTTP", "Response status: " + statusCode);
+                Gdx.app.log("HTTP", "Response body: " + (response.length() > 500 ? response.substring(0, 500) + "..." : response));
 
                 Gdx.app.postRunnable(() -> {
                     if (statusCode >= 200 && statusCode < 300) {

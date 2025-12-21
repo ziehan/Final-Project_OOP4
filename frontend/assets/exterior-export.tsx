@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <tileset version="1.10" tiledversion="1.11.2" name="exterior-export" tilewidth="32" tileheight="32" tilecount="240" columns="8">
  <image source="exterior-export.png" width="256" height="960"/>
+ <tile id="3">
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="25" y="19" width="7" height="7"/>
+  </objectgroup>
+ </tile>
+ <tile id="4">
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="0" y="19" width="8" height="7"/>
+  </objectgroup>
+ </tile>
  <tile id="5">
   <objectgroup draworder="index" id="2">
    <object id="1" x="24" y="10" width="8" height="22"/>
@@ -8,7 +18,7 @@
  </tile>
  <tile id="6">
   <objectgroup draworder="index" id="2">
-   <object id="1" x="0" y="10" width="32" height="16"/>
+   <object id="1" x="0" y="19" width="32" height="7"/>
   </objectgroup>
  </tile>
  <tile id="7">
@@ -33,7 +43,7 @@
  </tile>
  <tile id="22">
   <objectgroup draworder="index" id="2">
-   <object id="1" x="0" y="10" width="32" height="16"/>
+   <object id="1" x="0" y="19" width="32" height="7"/>
   </objectgroup>
  </tile>
  <tile id="23">
