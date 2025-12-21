@@ -10,7 +10,6 @@ public class SlotInfo {
     private boolean isEmpty;
     private LocalDateTime lastUpdated;
 
-    // Player info
     private String currentMap;
     private String currentRoom;
     private Integer playerHp;
@@ -93,6 +92,7 @@ public class SlotInfo {
                 }
             }
         }
+
         return info;
     }
 

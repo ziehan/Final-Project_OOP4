@@ -1,5 +1,7 @@
 package com.isthereanyone.frontend.screens;
 
+// Game Play Screen - handles main gameplay loop
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.GL20;
