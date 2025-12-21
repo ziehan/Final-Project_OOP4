@@ -10,6 +10,8 @@ import com.badlogic.gdx.math.Vector2;
 import com.isthereanyone.frontend.components.Inventory;
 import com.isthereanyone.frontend.managers.MyAssetManager;
 
+// biar bisa commit lagi
+
 public class Player {
     public enum State { IDLE, WALK, RUN, HURT, DEAD }
     public State currentState = State.IDLE;
