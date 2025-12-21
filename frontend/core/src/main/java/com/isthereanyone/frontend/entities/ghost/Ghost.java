@@ -210,4 +210,15 @@ public class Ghost implements GameObserver {
             setStrategy(new InvestigateStrategy());
         }
     }
+
+    public void pursuePlayerTo(float targetX, float targetY) {
+        System.out.println("GHOST: I see you entering! Following...");
+        setStrategy(new DoorBreachStrategy(targetX, targetY));
+    }
+
+    public void investigatePosition(float x, float y) {
+        System.out.println("GHOST: Checking suspicious noise...");
+        this.investigationTarget = new Vector2(x, y);
+        setStrategy(new InvestigateStrategy());
+    }
 }

@@ -41,11 +41,21 @@
    <object id="1" x="0" y="0" width="8" height="26"/>
   </objectgroup>
  </tile>
+ <tile id="31">
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="0" y="10" width="32" height="16"/>
+  </objectgroup>
+ </tile>
  <tile id="102">
   <objectgroup draworder="index" id="2">
    <object id="1" x="11" y="-0.25" width="46" height="7.125"/>
    <object id="2" x="14.2727" y="6.62501" width="38.7273" height="18.9545"/>
    <object id="3" x="30.7954" y="23.7386" width="14" height="6"/>
+  </objectgroup>
+ </tile>
+ <tile id="111">
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="6.91038" y="15.8465" width="21.2804" height="14.8385"/>
   </objectgroup>
  </tile>
  <tile id="128">

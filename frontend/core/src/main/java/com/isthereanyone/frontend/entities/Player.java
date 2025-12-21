@@ -23,6 +23,8 @@ public class Player {
     private boolean isInvincible = false;
     private float hurtTimer = 0f;
 
+    public boolean isHidden = false;
+
     public float maxStamina = 100f;
     public float currentStamina = 100f;
     private float staminaDrain = 30f;
@@ -94,6 +96,15 @@ public class Player {
     public void takeDamage() {
         if (isInvincible || isDead) return;
 
+        if (isHidden) {
+            isHidden = false;
+            position.y -= 32f;
+
+            System.out.println("GHOST: Found you! Forced out of hiding!");
+
+            return;
+        }
+
         health--;
         System.out.println("Player hit. HP left: " + health);
 
@@ -164,7 +175,7 @@ public class Player {
     }
 
     public void move(Vector2 direction, float delta) {
-        if (isDead || currentState == State.HURT) return;
+        if (isDead || currentState == State.HURT || isHidden) return;
 
         boolean isMoving = direction.len2() > 0;
         boolean wantsRun = currentState == State.RUN;
@@ -218,13 +229,14 @@ public class Player {
     }
 
     public void render(SpriteBatch batch) {
+        if (isHidden) return;
+
         batch.setColor(Color.WHITE);
         TextureRegion frame = currentAnimation.getKeyFrame(stateTime);
         batch.draw(frame, position.x - 16, position.y - 15);
     }
 
     public Rectangle getBoundingRectangle() {
-        // x+10, width 14, height 10 (Sesuai logic tabrakan tembok di RoamingState)
-        return new Rectangle(position.x + 10, position.y, 14, 10);
+        return new Rectangle(position.x + 9, position.y, 14, 10);
     }
 }
