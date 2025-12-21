@@ -13,12 +13,26 @@ public class NetworkManager {
     }
 
     public boolean login(String username, String password){
-        System.out.println("[MOCK] Login request sent for: " + username);
-        System.out.println("[MOCK] Server responded: 200 OK");
+        System.out.println("[LOGIN] " + username);
+        return true;
+    }
+
+    public boolean signup(String username, String password) {
+        System.out.println("[SIGNUP] " + username);
+        return true;
+    }
+
+    public boolean loadSaveSlots(String username) {
+        System.out.println("[LOAD SLOTS] " + username);
+        return true;
+    }
+
+    public boolean saveGameData(String username, int slotNumber, SaveSlotManager.SaveSlotData saveData) {
+        System.out.println("[SAVE] Slot " + slotNumber);
         return true;
     }
 
     public void submitScore(int score){
-        System.out.println("[MOCK] Score " + score + " sent to server.");
+        System.out.println("[SCORE] " + score);
     }
 }
