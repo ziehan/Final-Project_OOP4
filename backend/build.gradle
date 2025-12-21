@@ -1,12 +1,12 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '4.0.0'
-    id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.springframework.boot' version '3.2.1'
+    id 'io.spring.dependency-management' version '1.1.4'
 }
 
 group = 'com.isthereanyone'
 version = '0.0.1-SNAPSHOT'
-description = 'backend'
+description = 'Is There Anyone - Game Backend'
 
 java {
     toolchain {
@@ -19,14 +19,28 @@ repositories {
 }
 
 dependencies {
+    // Spring Boot Starters
+    implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-//    runtimeOnly 'org.postgresql:postgresql'
-    runtimeOnly 'com.h2database:h2'
-    testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
-    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // PostgreSQL Driver (untuk Neon Console)
+    runtimeOnly 'org.postgresql:postgresql'
+
+    // Hibernate Types untuk JSONB support
+    implementation 'io.hypersistence:hypersistence-utils-hibernate-63:3.7.3'
+
+    // Jackson untuk JSON processing
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+
+    // Lombok (optional, untuk reduce boilerplate)
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // Test
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testRuntimeOnly 'com.h2database:h2'
 }
 
 tasks.named('test') {
