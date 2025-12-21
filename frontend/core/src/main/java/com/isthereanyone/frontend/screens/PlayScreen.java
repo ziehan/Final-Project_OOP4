@@ -5,7 +5,9 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -90,20 +92,42 @@ public class PlayScreen extends BaseScreen {
         int finishedCount = 0;
         String prompt = null;
 
-        for (BaseTask task : world.tasks) {
-            if (task.isCompleted) finishedCount++;
-            else if (world.player.position.dst(task.getBounds().x, task.getBounds().y) < 60f) {
-                prompt = "[E] Interact";
-            }
+        if (world.player.isHidden) {
+            prompt = "[E] Leave";
         }
-        for (RitualItem item : world.itemsOnGround) {
-            if (!item.isCollected && world.player.position.dst(item.getBounds().x, item.getBounds().y) < 40f) {
-                prompt = "[E] Pick Up " + item.getType();
-                break;
+        else {
+            for (RectangleMapObject spot : world.hideSpots) {
+                Rectangle r = spot.getRectangle();
+                float cx = r.x + (r.width / 2);
+                float cy = r.y + (r.height / 2);
+
+                if (world.player.position.dst(cx, cy) < 40f) {
+                    prompt = "[E] Hide";
+                    break;
+                }
             }
-        }
-        if (world.player.position.dst(world.gate.getBounds().x, world.gate.getBounds().y) < 80f) {
-            prompt = world.gate.isLocked() ? "GATE LOCKED" : "[E] ESCAPE!";
+
+            if (prompt == null) {
+                for (BaseTask task : world.tasks) {
+                    if (task.isCompleted) finishedCount++;
+                    else if (world.player.position.dst(task.getBounds().x, task.getBounds().y) < 30f) {
+                        prompt = "[E] Interact";
+                    }
+                }
+            }
+
+            if (prompt == null) {
+                for (RitualItem item : world.itemsOnGround) {
+                    if (!item.isCollected && world.player.position.dst(item.getBounds().x, item.getBounds().y) < 40f) {
+                        prompt = "[E] Pick Up " + item.getType();
+                        break;
+                    }
+                }
+            }
+
+            if (prompt == null && world.player.position.dst(world.gate.getBounds().x, world.gate.getBounds().y) < 80f) {
+                prompt = world.gate.isLocked() ? "GATE LOCKED" : "[E] ESCAPE!";
+            }
         }
 
         gameHUD.render(world.player, finishedCount, world.tasks.size, prompt);

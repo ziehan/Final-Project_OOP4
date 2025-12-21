@@ -22,48 +22,50 @@
         },
         "Interior.tsx": {
             "scaleInDock": 1,
-            "scaleInEditor": 3
+            "scaleInEditor": 4
         },
         "Tilemap.tmx": {
             "expandedGroupLayers": [
                 11
             ],
-            "scale": 0.0625,
-            "selectedLayer": 7,
+            "scale": 5.5,
+            "selectedLayer": 9,
             "viewCenter": {
-                "x": -208,
-                "y": 3560
+                "x": 1473.090909090909,
+                "y": 352.6363636363636
             }
         },
         "Trees_animation.tsx": {
             "scaleInDock": 1,
-            "scaleInEditor": 1.5
+            "scaleInEditor": 1
         },
         "exterior-export.tsx": {
             "scaleInDock": 1,
-            "scaleInEditor": 1.5
+            "scaleInEditor": 1
         },
         "house_details.tsx": {
             "scaleInDock": 1
         },
         "walls_and_floor.tsx": {
-            "scaleInDock": 0.75
+            "scaleInDock": 0.75,
+            "scaleInEditor": 2
         }
     },
     "last.imagePath": "C:/Users/nazie/Documents/GitHub/Final-Project_OOP4/frontend/assets",
     "openFiles": [
         "Tilemap.tmx",
         "exterior-export.tsx",
-        "Trees_animation.tsx",
-        "Interior.tsx"
+        "Interior.tsx",
+        "walls_and_floor.tsx"
     ],
     "project": "IsThereAnyoneTilemap.tiled-project",
     "property.type": "string",
     "recentFiles": [
+        "walls_and_floor.tsx",
         "Interior.tsx",
-        "Trees_animation.tsx",
         "exterior-export.tsx",
-        "Tilemap.tmx"
+        "Tilemap.tmx",
+        "Trees_animation.tsx"
     ],
     "resizeMap.removeObjects": false,
     "tileset.lastUsedFormat": "tsx"

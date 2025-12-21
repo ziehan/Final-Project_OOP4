@@ -11,14 +11,16 @@ public class ChaseStrategy implements GhostStrategy {
     @Override
     public void executeBehavior(Ghost ghost, Player player, float delta) {
         direction.set(player.position).sub(ghost.getPosition()).nor();
-
         ghost.getPosition().mulAdd(direction, ghost.getSpeed() * delta);
 
         float distance = ghost.getPosition().dst(player.position);
 
         if (distance > ESCAPE_RADIUS) {
-            System.out.println("GHOST: Player is missing, back to patrol.");
-            ghost.revertToPatrol();
+            System.out.println("GHOST: Lost visual! Investigating last known position...");
+
+            ghost.investigationTarget = new Vector2(player.position.x, player.position.y);
+
+            ghost.setStrategy(new InvestigateStrategy());
         }
     }
 }

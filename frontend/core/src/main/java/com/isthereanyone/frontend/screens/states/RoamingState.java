@@ -7,11 +7,14 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.objects.TiledMapTileMapObject;
 import com.badlogic.gdx.maps.tiled.tiles.AnimatedTiledMapTile;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.isthereanyone.frontend.entities.Player;
+import com.isthereanyone.frontend.entities.ghost.Ghost;
 import com.isthereanyone.frontend.entities.items.RitualItem;
 import com.isthereanyone.frontend.entities.tasks.BaseTask;
 import com.isthereanyone.frontend.managers.GameWorld;
@@ -70,37 +73,81 @@ public class RoamingState implements PlayState {
     private void handleInteraction() {
         if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
             Player player = screen.getWorld().player;
-            Rectangle playerRect = player.getBoundingRectangle();
+
+            if (player.isHidden) {
+                player.isHidden = false;
+                player.position.y -= 32f;
+                System.out.println("Player came out from hiding.");
+                return;
+            }
+
+            for (RectangleMapObject spot : screen.getWorld().hideSpots) {
+                Rectangle r = spot.getRectangle();
+                Vector2 spotCenter = new Vector2();
+                r.getCenter(spotCenter);
+
+                if (player.position.dst(spotCenter) < 40f) {
+                    player.isHidden = true;
+                    player.position.set(spotCenter.x - 8, spotCenter.y);
+                    player.currentState = Player.State.IDLE;
+                    System.out.println("Player is hiding in: " + spot.getName());
+                    return;
+                }
+            }
 
             for (RitualItem item : screen.getWorld().itemsOnGround) {
                 if (player.position.dst(item.getPosition()) < 50f) {
                     System.out.println("Interacted with Item: " + item.getType());
-                    // item.isCollected = true; // Logic ambil item nanti
+                    // item.isCollected = true;
                     return;
                 }
             }
 
             for (BaseTask task : screen.getWorld().tasks) {
-                if (player.position.dst(task.getPosition()) < 60f) {
+                if (player.position.dst(task.getPosition()) < 30f) {
                     System.out.println("Interacted with Task: " + task.getType());
                     task.interact(player);
                     return;
                 }
+            }
+
+            screen.getWorld().gate.update(screen.getWorld());
+
+            if (screen.getWorld().player.position.dst(screen.getWorld().gate.getBounds().x, screen.getWorld().gate.getBounds().y) < 30f) {
+                screen.getWorld().gate.interact();
+                return;
             }
         }
     }
 
     private void handleTeleport() {
         Player player = screen.getWorld().player;
+        Ghost ghost = screen.getWorld().ghost;
         Rectangle playerRect = player.getBoundingRectangle();
+
         for (RectangleMapObject teleportObj : screen.getWorld().teleports) {
             if (playerRect.overlaps(teleportObj.getRectangle())) {
                 if (teleportObj.getProperties().containsKey("destX")) {
                     float destX = teleportObj.getProperties().get("destX", Float.class);
-                    float destY = teleportObj.getProperties().get("destY", Float.class);
-                    player.position.set(destX, destY);
-                    screen.camera.position.set(destX + 16, destY + 16, 0);
+                    float rawDestY = teleportObj.getProperties().get("destY", Float.class);
+
+                    int mapHeightTiles = screen.getWorld().map.getProperties().get("height", Integer.class);
+                    int tileHeight = screen.getWorld().map.getProperties().get("tileheight", Integer.class);
+                    float finalDestY = (mapHeightTiles * tileHeight) - rawDestY;
+
+                    float distToGhost = player.position.dst(ghost.getPosition());
+                    float doorX = player.position.x;
+                    float doorY = player.position.y;
+
+                    player.position.set(destX, finalDestY);
+                    screen.camera.position.set(destX + 16, finalDestY + 16, 0);
                     screen.camera.update();
+
+                    if (distToGhost < 300f) {
+                        ghost.pursuePlayerTo(destX, finalDestY);
+                    } else {
+                        ghost.investigatePosition(doorX, doorY);
+                    }
                     break;
                 }
             }
@@ -120,15 +167,22 @@ public class RoamingState implements PlayState {
         renderQueue.add(new DepthObject(player.position.y, () -> player.render(screen.batch)));
         renderQueue.add(new DepthObject(screen.getWorld().ghost.getPosition().y, () -> screen.getWorld().ghost.render(screen.batch)));
 
+        renderQueue.add(new DepthObject(
+            screen.getWorld().gate.getBounds().y,
+            () -> screen.getWorld().gate.render(screen.batch)
+        ));
+
         for (RitualItem item : screen.getWorld().itemsOnGround) {
             renderQueue.add(new DepthObject(item.getPosition().y, () -> item.render(screen.batch, null)));
         }
+
         for (BaseTask task : screen.getWorld().tasks) {
-            renderQueue.add(new DepthObject(task.getPosition().y, () -> task.render(screen.batch)));
+            float sortY = task.getPosition().y + 5.0f;
+            renderQueue.add(new DepthObject(sortY, () -> task.render(screen.batch)));
         }
 
-        processLayerForSorting("Details", 15.0f);
-        processLayerForSorting("Interior Details", 15.0f);
+        processLayerForSorting("Details", 5.0f);
+        processLayerForSorting("Interior Details", 5.0f);
         processLayerForSorting("Interaction Details", 0.0f);
         processLayerForSorting("Collidables", 0.0f);
         processLayerForSorting("Interior", 0.0f);
@@ -150,23 +204,33 @@ public class RoamingState implements PlayState {
         screen.uiViewport.setScreenBounds(0, 0, screenW, screenH);
 
         screen.lightingSystem.renderLightMap(screen.batch, screen.getWorld().player, screen.camera);
+
+        if (screen.getWorld().player.isHidden) {
+            Gdx.gl.glEnable(Gdx.gl.GL_BLEND);
+            screen.uiBatch.begin();
+            screen.shapeRenderer.setProjectionMatrix(screen.uiViewport.getCamera().combined);
+            screen.shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+
+            screen.shapeRenderer.setColor(0, 0, 0, 0.9f);
+            screen.shapeRenderer.rect(0, 0, screenW, screenH);
+
+            screen.shapeRenderer.end();
+            screen.uiBatch.end();
+        }
+
         screen.lightingSystem.renderDarkness(screen.uiBatch, screen.uiViewport);
         screen.renderHUD();
     }
 
-    // --- HELPER METHOD DENGAN FIX ERROR LAMBDA ---
     private void processLayerForSorting(String layerName, float offset) {
         MapLayer layer = screen.getWorld().map.getLayers().get(layerName);
         if (layer == null) return;
 
-        // 1. OBJECTS
         for (MapObject object : layer.getObjects()) {
             if (object instanceof TiledMapTileMapObject) {
                 TiledMapTileMapObject tileObj = (TiledMapTileMapObject) object;
                 if (tileObj.getTile() != null) {
                     TextureRegion region = tileObj.getTile().getTextureRegion();
-
-                    // FIX: Capture variable into final
                     final float drawX = tileObj.getX();
                     final float drawY = tileObj.getY();
                     final float sortY = tileObj.getY() + offset;
@@ -178,9 +242,8 @@ public class RoamingState implements PlayState {
             }
         }
 
-        // 2. TILE LAYERS (YANG ERROR KEMARIN)
-        if (layer instanceof com.badlogic.gdx.maps.tiled.TiledMapTileLayer) {
-            com.badlogic.gdx.maps.tiled.TiledMapTileLayer tileLayer = (com.badlogic.gdx.maps.tiled.TiledMapTileLayer) layer;
+        if (layer instanceof TiledMapTileLayer) {
+            TiledMapTileLayer tileLayer = (TiledMapTileLayer) layer;
             int startX = (int) (screen.camera.position.x - screen.camera.viewportWidth/2) / 32;
             int endX = (int) (screen.camera.position.x + screen.camera.viewportWidth/2) / 32 + 2;
             int startY = (int) (screen.camera.position.y - screen.camera.viewportHeight/2) / 32;
@@ -189,21 +252,15 @@ public class RoamingState implements PlayState {
             for (int x = startX; x < endX; x++) {
                 for (int y = startY; y < endY; y++) {
                     if (x < 0 || y < 0 || x >= tileLayer.getWidth() || y >= tileLayer.getHeight()) continue;
-                    com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell cell = tileLayer.getCell(x, y);
+                    TiledMapTileLayer.Cell cell = tileLayer.getCell(x, y);
                     if (cell != null && cell.getTile() != null) {
                         TextureRegion region = cell.getTile().getTextureRegion();
-
-                        // --- FIX UTAMA DISINI ---
-                        // Kita simpan hasil perkalian ke variabel final 'worldX' & 'worldY'
                         final float worldX = x * 32;
                         final float worldY = y * 32;
                         final float sortY = worldY + offset;
-
-                        // Lambda sekarang pakai variabel final ini, bukan x/y loop
                         renderQueue.add(new DepthObject(sortY, () -> {
                             screen.batch.draw(region, worldX, worldY);
                         }));
-                        // ------------------------
                     }
                 }
             }
@@ -248,7 +305,7 @@ public class RoamingState implements PlayState {
         if (player.position.x > mapSize - 32) player.position.x = mapSize - 32;
         if (player.position.y < 0) player.position.y = 0;
         if (player.position.y > mapSize - 32) player.position.y = mapSize - 32;
-        Rectangle playerRect = new Rectangle(player.position.x + 10, player.position.y, 14, 10);
+        Rectangle playerRect = player.getBoundingRectangle();
         for (Rectangle wall : screen.getWorld().walls) {
             if (playerRect.overlaps(wall)) { player.position.set(oldX, oldY); break; }
         }
@@ -268,13 +325,31 @@ public class RoamingState implements PlayState {
     private void renderDebugCollision() {
         screen.shapeRenderer.setProjectionMatrix(screen.camera.combined);
         screen.shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        screen.shapeRenderer.setColor(1, 0, 0, 1);
-        for (Rectangle wall : screen.getWorld().walls) screen.shapeRenderer.rect(wall.x, wall.y, wall.width, wall.height);
+        Player player = screen.getWorld().player;
+        Rectangle pRect = player.getBoundingRectangle();
+        screen.shapeRenderer.setColor(com.badlogic.gdx.graphics.Color.RED);
+        screen.shapeRenderer.rect(pRect.x, pRect.y, pRect.width, pRect.height);
+        com.isthereanyone.frontend.entities.ghost.Ghost ghost = screen.getWorld().ghost;
+        screen.shapeRenderer.setColor(com.badlogic.gdx.graphics.Color.YELLOW);
+        screen.shapeRenderer.rect(ghost.getPosition().x, ghost.getPosition().y, 32, 32);
+        screen.shapeRenderer.setColor(0, 0, 1, 1);
+        for (Rectangle wall : screen.getWorld().walls) {
+            screen.shapeRenderer.rect(wall.x, wall.y, wall.width, wall.height);
+        }
         screen.shapeRenderer.setColor(0, 1, 1, 1);
         for (RectangleMapObject tp : screen.getWorld().teleports) {
             Rectangle r = tp.getRectangle();
             screen.shapeRenderer.rect(r.x, r.y, r.width, r.height);
         }
+        screen.shapeRenderer.setColor(com.badlogic.gdx.graphics.Color.PURPLE);
+        for (RectangleMapObject hs : screen.getWorld().hideSpots) {
+            Rectangle r = hs.getRectangle();
+            screen.shapeRenderer.rect(r.x, r.y, r.width, r.height);
+        }
+        screen.shapeRenderer.setColor(com.badlogic.gdx.graphics.Color.GREEN);
+        Rectangle gRect = screen.getWorld().gate.getBounds();
+        screen.shapeRenderer.rect(gRect.x, gRect.y, gRect.width, gRect.height);
+
         screen.shapeRenderer.end();
     }
 }

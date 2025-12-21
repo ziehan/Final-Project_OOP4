@@ -1,5 +1,6 @@
 package com.isthereanyone.frontend.managers;
 
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapGroupLayer;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapObject;
@@ -26,6 +27,7 @@ public class GameWorld {
     public TiledMap map;
     public Array<Rectangle> walls;
     public Array<RectangleMapObject> teleports;
+    public Array<RectangleMapObject> hideSpots;
 
     public Player player;
     public Ghost ghost;
@@ -43,23 +45,19 @@ public class GameWorld {
 
         walls = new Array<>();
         teleports = new Array<>();
+        hideSpots = new Array<>();
         tasks = new Array<>();
 
-        // 1. Parsing Collision
         parseManualCollisionLayer();
         parseObjectLayerCollisions("Details");
         parseObjectLayerCollisions("Interior Details");
         parseObjectLayerCollisions("Collidables");
         parseTileLayerCollisions();
 
-        // 2. Parsing Teleport (PERBAIKAN UTAMA DI SINI)
         parseInteractionLayer();
-
-        // 3. Parsing Entities
         parseEntitiesLayer();
 
-        // 4. Fallback (Jaga-jaga)
-        if (player == null) player = new Player(400, 400);
+        if (player == null) player = new Player(384, 384);
         if (ghost == null) ghost = new Ghost(1200, 1200);
         if (gate == null) gate = new Gate(1200, 800);
 
@@ -68,35 +66,104 @@ public class GameWorld {
         setupGhostPatrol();
     }
 
-    // --- FIX: PENCARIAN LAYER TELEPORT YANG LEBIH KUAT ---
+    private void parseEntitiesLayer() {
+        MapLayer layer = null;
+        MapLayer logicGroup = map.getLayers().get("Logic");
+        if (logicGroup instanceof MapGroupLayer) {
+            layer = ((MapGroupLayer) logicGroup).getLayers().get("Entities");
+        }
+        if (layer == null) layer = map.getLayers().get("Entities");
+
+        if (layer == null) return;
+
+        for (MapObject object : layer.getObjects()) {
+            String type = null;
+            if (object.getProperties().containsKey("Type")) {
+                type = object.getProperties().get("Type", String.class);
+            }
+
+            float x = 0;
+            float y = 0;
+            TextureRegion textureFromTiled = null;
+
+            if (object instanceof RectangleMapObject) {
+                Rectangle rect = ((RectangleMapObject) object).getRectangle();
+                x = rect.x; y = rect.y;
+            } else if (object instanceof TiledMapTileMapObject) {
+                TiledMapTileMapObject tileObj = (TiledMapTileMapObject) object;
+                x = tileObj.getX();
+                y = tileObj.getY();
+
+                if (tileObj.getTile() != null) {
+                    textureFromTiled = tileObj.getTile().getTextureRegion();
+                }
+            } else {
+                x = object.getProperties().get("x", Float.class);
+                y = object.getProperties().get("y", Float.class);
+            }
+
+            if (type != null) {
+                switch (type) {
+                    case "PlayerStart":
+                        player = new Player(x, y);
+                        break;
+                    case "GhostStart":
+                        ghost = new Ghost(x, y);
+                        break;
+
+                    case "Gate":
+                        gate = new Gate(x, y);
+                        if (textureFromTiled != null) {
+                            gate.setTexture(textureFromTiled);
+                            System.out.println("DEBUG: Gate texture loaded from Tiled!");
+                        }
+                        break;
+
+                    case "Task":
+                        if (object.getProperties().containsKey("TaskType")) {
+                            String taskType = object.getProperties().get("TaskType", String.class);
+                            BaseTask newTask = TaskFactory.createTask(taskType, x, y);
+
+                            if (textureFromTiled != null) {
+                                newTask.setTexture(textureFromTiled);
+                                newTask.getBounds().setWidth(textureFromTiled.getRegionWidth());
+                                newTask.getBounds().setHeight(textureFromTiled.getRegionHeight());
+                            }
+
+                            boolean hasCustomCollision = false;
+                            if (!hasCustomCollision) {
+                                walls.add(new Rectangle(x, y, newTask.getBounds().width, newTask.getBounds().height));
+                            }
+                            tasks.add(newTask);
+                        }
+                        break;
+                }
+            }
+        }
+    }
+
     private void parseInteractionLayer() {
         MapLayer interactionLayer = null;
-
-        // Coba cari berbagai kemungkinan nama dan lokasi layer
         String[] layerNames = {"Interactions", "Interaction Details", "Teleports"};
-
-        // 1. Cek di dalam folder "Logic"
         MapLayer logicGroup = map.getLayers().get("Logic");
+
         if (logicGroup instanceof MapGroupLayer) {
             for (String name : layerNames) {
                 interactionLayer = ((MapGroupLayer) logicGroup).getLayers().get(name);
-                if (interactionLayer != null) break; // Ketemu!
+                if (interactionLayer != null) break;
             }
         }
-
-        // 2. Kalau belum ketemu, cek di Root (Luar folder)
         if (interactionLayer == null) {
             for (String name : layerNames) {
                 interactionLayer = map.getLayers().get(name);
-                if (interactionLayer != null) break; // Ketemu!
+                if (interactionLayer != null) break;
             }
         }
 
         if (interactionLayer != null) {
-            System.out.println("DEBUG: Layer Teleport ditemukan: " + interactionLayer.getName());
             for (MapObject object : interactionLayer.getObjects()) {
-                if (object.getProperties().containsKey("Type") &&
-                    "Teleport".equals(object.getProperties().get("Type", String.class))) {
+                if (object.getProperties().containsKey("Type")) {
+                    String type = object.getProperties().get("Type", String.class);
 
                     Rectangle rect = null;
                     if (object instanceof RectangleMapObject) {
@@ -111,94 +178,19 @@ public class GameWorld {
                     if (rect != null) {
                         RectangleMapObject wrapper = new RectangleMapObject(rect.x, rect.y, rect.width, rect.height);
                         wrapper.getProperties().putAll(object.getProperties());
-                        teleports.add(wrapper);
-                    }
-                }
-            }
-        } else {
-            System.err.println("WARNING: Layer Interactions/Teleport TIDAK DITEMUKAN dimanapun!");
-        }
-    }
 
-    // Update method ini di GameWorld.java
-    private void parseEntitiesLayer() {
-        MapLayer layer = null;
-
-        // 1. Cari di dalam folder "Logic"
-        MapLayer logicGroup = map.getLayers().get("Logic");
-        if (logicGroup instanceof MapGroupLayer) {
-            layer = ((MapGroupLayer) logicGroup).getLayers().get("Entities");
-        }
-        // 2. Cari di luar (Backup)
-        if (layer == null) layer = map.getLayers().get("Entities");
-
-        if (layer == null) {
-            System.err.println("WARNING: Layer 'Entities' tidak ditemukan!");
-            return;
-        }
-
-        for (MapObject object : layer.getObjects()) {
-            if (object.getProperties().containsKey("Type")) {
-                String type = object.getProperties().get("Type", String.class);
-                float x = 0;
-                float y = 0;
-
-                // Variabel untuk menyimpan gambar sementara (jika ada)
-                com.badlogic.gdx.graphics.g2d.TextureRegion textureFromTiled = null;
-
-                if (object instanceof RectangleMapObject) {
-                    Rectangle rect = ((RectangleMapObject) object).getRectangle();
-                    x = rect.x; y = rect.y;
-                } else if (object instanceof TiledMapTileMapObject) {
-                    TiledMapTileMapObject tileObj = (TiledMapTileMapObject) object;
-                    x = tileObj.getX();
-                    y = tileObj.getY();
-                    // AMBIL GAMBAR DARI TILED DISINI
-                    if (tileObj.getTile() != null) {
-                        textureFromTiled = tileObj.getTile().getTextureRegion();
-                    }
-                } else {
-                    x = object.getProperties().get("x", Float.class);
-                    y = object.getProperties().get("y", Float.class);
-                }
-
-                if (type != null) {
-                    switch (type) {
-                        case "PlayerStart":
-                            player = new Player(x, y);
-                            break;
-
-                        case "GhostStart":
-                            ghost = new Ghost(x, y);
-                            break;
-
-                        case "Gate":
-                            gate = new Gate(x, y);
-                            break;
-
-                        case "Task":
-                            if (object.getProperties().containsKey("TaskType")) {
-                                String taskType = object.getProperties().get("TaskType", String.class);
-
-                                // 1. Bikin Task-nya
-                                BaseTask newTask = TaskFactory.createTask(taskType, x, y);
-
-                                // 2. TEMPEL GAMBARNYA (PENTING!)
-                                if (textureFromTiled != null) {
-                                    newTask.setTexture(textureFromTiled);
-                                }
-
-                                tasks.add(newTask);
-                                System.out.println("DEBUG: Task " + taskType + " created with texture: " + (textureFromTiled != null));
-                            }
-                            break;
+                        if ("Teleport".equals(type)) {
+                            teleports.add(wrapper);
+                        } else if ("HideSpot".equals(type)) {
+                            hideSpots.add(wrapper);
+                            System.out.println("DEBUG: HideSpot found: " + object.getName());
+                        }
                     }
                 }
             }
         }
     }
 
-    // --- HELPER LAINNYA (SAMA SEPERTI SEBELUMNYA) ---
     private void parseObjectLayerCollisions(String layerName) {
         MapLayer objectLayer = map.getLayers().get(layerName);
         if (objectLayer != null) {
@@ -227,11 +219,13 @@ public class GameWorld {
                 for (int x = 0; x < tileLayer.getWidth(); x++) {
                     for (int y = 0; y < tileLayer.getHeight(); y++) {
                         TiledMapTileLayer.Cell cell = tileLayer.getCell(x, y);
-                        if (cell != null && cell.getTile() != null && cell.getTile().getObjects().getCount() > 0) {
-                            for (MapObject obj : cell.getTile().getObjects()) {
-                                if (obj instanceof RectangleMapObject) {
-                                    Rectangle localRect = ((RectangleMapObject) obj).getRectangle();
-                                    walls.add(new Rectangle((x*32)+localRect.x, (y*32)+localRect.y, localRect.width, localRect.height));
+                        if (cell != null && cell.getTile() != null) {
+                            if (cell.getTile().getObjects().getCount() > 0) {
+                                for (MapObject obj : cell.getTile().getObjects()) {
+                                    if (obj instanceof RectangleMapObject) {
+                                        Rectangle localRect = ((RectangleMapObject) obj).getRectangle();
+                                        walls.add(new Rectangle((x*32)+localRect.x, (y*32)+localRect.y, localRect.width, localRect.height));
+                                    }
                                 }
                             }
                         }
@@ -259,64 +253,37 @@ public class GameWorld {
         for (ItemType type : ItemType.values()) itemPool.add(type);
         itemPool.shuffle();
 
-        // Range spawn (Sesuaikan area map kamu)
         float minVal = 350f;
-        float maxVal = 4800f; // Bisa diperluas sampai mapSize
-
+        float maxVal = 4800f;
         float altarX = (gate != null) ? gate.getBounds().x : 1000;
         float altarY = (gate != null) ? gate.getBounds().y : 1000;
 
         for (ItemType type : itemPool) {
-            boolean valid = false;
-            int attempts = 0;
-            float x = 0, y = 0;
-
-            // Coba cari posisi valid maksimal 100 kali
+            boolean valid = false; int attempts = 0; float x = 0, y = 0;
             while (!valid && attempts < 100) {
                 attempts++;
                 x = MathUtils.random(minVal, maxVal);
                 y = MathUtils.random(minVal, maxVal);
-
-                // 1. Cek Jarak dari Altar (Jangan terlalu dekat altar)
                 if (Vector2.dst(x, y, altarX, altarY) < 250f) continue;
 
                 Rectangle candidateRect = new Rectangle(x, y, 24, 24);
                 boolean collisionFound = false;
-
-                // 2. Cek Tabrakan dengan ITEM LAIN
                 for (RitualItem existing : itemsOnGround) {
-                    if (candidateRect.overlaps(existing.getBounds())) {
-                        collisionFound = true; break;
-                    }
+                    if (candidateRect.overlaps(existing.getBounds())) { collisionFound = true; break; }
                 }
                 if (collisionFound) continue;
-
-                // 3. Cek Tabrakan dengan TEMBOK & ASSET (Walls) [BARU]
                 for (Rectangle wall : walls) {
-                    if (candidateRect.overlaps(wall)) {
-                        collisionFound = true; break;
-                    }
+                    if (candidateRect.overlaps(wall)) { collisionFound = true; break; }
                 }
                 if (collisionFound) continue;
-
-                // 4. Cek Tabrakan dengan TELEPORT (Jangan spawn di depan pintu) [BARU]
                 for (RectangleMapObject tele : teleports) {
-                    if (candidateRect.overlaps(tele.getRectangle())) {
-                        collisionFound = true; break;
-                    }
+                    if (candidateRect.overlaps(tele.getRectangle())) { collisionFound = true; break; }
                 }
                 if (collisionFound) continue;
 
-                // Kalau lolos semua tes, berarti VALID
                 valid = true;
             }
-
-            if (valid) {
-                itemsOnGround.add(new RitualItem(type, x, y));
-                System.out.println("DEBUG: Item " + type + " spawned at " + x + "," + y);
-            } else {
-                System.err.println("WARNING: Gagal mencari tempat spawn valid untuk item " + type);
-            }
+            if (valid) itemsOnGround.add(new RitualItem(type, x, y));
         }
     }
 
