@@ -8,6 +8,7 @@ public class SlotInfo {
     private Integer slotId;
     private boolean isEmpty;
     private LocalDateTime lastUpdated;
+
     private String currentMap;
     private Integer allTimeDeathCount;
     private Integer allTimeCompletedTask;
@@ -47,6 +48,7 @@ public class SlotInfo {
                 }
             }
         }
+
         return info;
     }
 

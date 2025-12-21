@@ -47,6 +47,7 @@ public class GameWorld {
         teleports = new Array<>();
         hideSpots = new Array<>();
         tasks = new Array<>();
+        hideSpots = new Array<>();
 
         parseManualCollisionLayer();
         parseObjectLayerCollisions("Details");
