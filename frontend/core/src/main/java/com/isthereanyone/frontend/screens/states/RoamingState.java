@@ -297,17 +297,31 @@ public class RoamingState implements PlayState {
     }
 
     private void handleInputAndCollision(float delta, Player player) {
-        float oldX = player.position.x; float oldY = player.position.y;
+        float oldX = player.position.x;
+        float oldY = player.position.y;
         player.update(delta);
         screen.inputHandler.handleInput(player, delta);
+
         float mapSize = screen.getWorld().map.getProperties().get("width", Integer.class) * 32f;
         if (player.position.x < 0) player.position.x = 0;
         if (player.position.x > mapSize - 32) player.position.x = mapSize - 32;
         if (player.position.y < 0) player.position.y = 0;
         if (player.position.y > mapSize - 32) player.position.y = mapSize - 32;
+
         Rectangle playerRect = player.getBoundingRectangle();
+
         for (Rectangle wall : screen.getWorld().walls) {
-            if (playerRect.overlaps(wall)) { player.position.set(oldX, oldY); break; }
+            if (playerRect.overlaps(wall)) {
+                player.position.set(oldX, oldY);
+                break;
+            }
+        }
+
+        com.isthereanyone.frontend.entities.Gate gate = screen.getWorld().gate;
+        if (gate != null && gate.isLocked()) {
+            if (playerRect.overlaps(gate.getBounds())) {
+                player.position.set(oldX, oldY);
+            }
         }
     }
 

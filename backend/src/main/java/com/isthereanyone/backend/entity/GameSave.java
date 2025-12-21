@@ -29,7 +29,7 @@ public class GameSave {
     private Integer slotId;
 
     @Type(JsonType.class)
-    @Column(name = "save_data", columnDefinition = "jsonb", nullable = false)
+    @Column(name = "save_data", columnDefinition = "text", nullable = false)
     @NotNull(message = "Save data tidak boleh kosong")
     private Map<String, Object> saveData;
 
