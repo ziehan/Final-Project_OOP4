@@ -15,7 +15,6 @@ import java.util.Map;
 @RequestMapping("/api")
 @CrossOrigin(origins = "*")
 public class HealthController {
-
     @GetMapping("/health")
     public ResponseEntity<ApiResponse<Map<String, Object>>> healthCheck() {
         Map<String, Object> health = new HashMap<>();
@@ -23,6 +22,7 @@ public class HealthController {
         health.put("service", "Is There Anyone - Game Backend");
         health.put("version", "1.0.0");
         health.put("timestamp", LocalDateTime.now());
+
         return ResponseEntity.ok(ApiResponse.success("Server is running", health));
     }
 

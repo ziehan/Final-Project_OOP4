@@ -5,7 +5,24 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="080bc8b2-5ff3-4b1e-ae00-f82e30f63afd" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/backend/HELP.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/bin/main/application.properties" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/isthereanyone/backend/BackendApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/isthereanyone/backend/BackendApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/isthereanyone/backend/config/CorsConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/isthereanyone/backend/config/CorsConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/isthereanyone/backend/controller/HealthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/isthereanyone/backend/controller/HealthController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/isthereanyone/backend/dto/SlotInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/isthereanyone/backend/dto/SlotInfo.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/isthereanyone/backend/exception/GlobalExceptionHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/isthereanyone/backend/exception/GlobalExceptionHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/isthereanyone/backend/exception/InvalidOperationException.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/isthereanyone/backend/exception/InvalidOperationException.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/isthereanyone/backend/exception/ResourceNotFoundException.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/isthereanyone/backend/exception/ResourceNotFoundException.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/isthereanyone/backend/repository/GameSaveRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/isthereanyone/backend/repository/GameSaveRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/core/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/core/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/core/src/main/java/com/isthereanyone/frontend/config/GameConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/core/src/main/java/com/isthereanyone/frontend/config/GameConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/core/src/main/java/com/isthereanyone/frontend/managers/NetworkManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/core/src/main/java/com/isthereanyone/frontend/managers/NetworkManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/core/src/main/java/com/isthereanyone/frontend/screens/MainMenuScreen.java" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/core/src/main/java/com/isthereanyone/frontend/screens/MainMenuScreen.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/core/src/main/java/com/isthereanyone/frontend/screens/PlayScreen.java" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/core/src/main/java/com/isthereanyone/frontend/screens/PlayScreen.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -55,6 +72,9 @@
   &quot;associatedIndex&quot;: 4
 }</component>
   <component name="ProjectId" id="36bxnCCwbQL38Z6K57M35I9vANp" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="1" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -64,15 +84,28 @@
     &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;backend&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
     &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/Asus/OneDrive/Desktop/PROGRAMMING/OOP 01/Final-Project_OOP4&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/nazie/Documents/GitHub/Final-Project_OOP4&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
-    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;
+    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.26199.169" />
+      </set>
+    </attachedChunks>
+  </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="080bc8b2-5ff3-4b1e-ae00-f82e30f63afd" name="Changes" comment="" />
@@ -80,8 +113,13 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1765289236915</updated>
+      <workItem from="1766311250207" duration="1044000" />
+      <workItem from="1766312372623" duration="2137000" />
     </task>
     <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
   </component>
   <component name="github-copilot-workspace">
     <instructionFileLocations>

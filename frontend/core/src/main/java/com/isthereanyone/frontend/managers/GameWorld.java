@@ -26,6 +26,7 @@ public class GameWorld {
     public TiledMap map;
     public Array<Rectangle> walls;
     public Array<RectangleMapObject> teleports;
+    public Array<RectangleMapObject> hideSpots;
 
     public Player player;
     public Ghost ghost;
@@ -44,6 +45,7 @@ public class GameWorld {
         walls = new Array<>();
         teleports = new Array<>();
         tasks = new Array<>();
+        hideSpots = new Array<>();
 
         // 1. Parsing Collision
         parseManualCollisionLayer();

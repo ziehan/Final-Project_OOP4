@@ -20,6 +20,7 @@ public class Player {
 
     public int health = 2;
     public boolean isDead = false;
+    public boolean isHidden = false;
     private boolean isInvincible = false;
     private float hurtTimer = 0f;
 
