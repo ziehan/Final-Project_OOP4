@@ -1,5 +1,6 @@
 package com.isthereanyone.frontend.managers;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapGroupLayer;
 import com.badlogic.gdx.maps.MapLayer;
@@ -21,6 +22,7 @@ import com.isthereanyone.frontend.entities.items.ItemType;
 import com.isthereanyone.frontend.entities.items.RitualItem;
 import com.isthereanyone.frontend.entities.tasks.BaseTask;
 import com.isthereanyone.frontend.entities.tasks.TaskFactory;
+import com.isthereanyone.frontend.network.dto.SaveData;
 import com.isthereanyone.frontend.observer.EventManager;
 
 public class GameWorld {
@@ -34,6 +36,13 @@ public class GameWorld {
     public Array<BaseTask> tasks;
     public Array<RitualItem> itemsOnGround;
     public Gate gate;
+
+    // Item spawn points from Tiled (Type: Item)
+    private Array<Vector2> itemSpawnPoints = new Array<>();
+
+    // Tiled spawn point (default)
+    private float tiledSpawnX = 384;
+    private float tiledSpawnY = 384;
 
     public GameWorld() {
         try {
@@ -58,6 +67,12 @@ public class GameWorld {
         parseInteractionLayer();
         parseEntitiesLayer();
 
+        // Store Tiled spawn point before potentially overriding
+        if (player != null) {
+            tiledSpawnX = player.position.x;
+            tiledSpawnY = player.position.y;
+        }
+
         if (player == null) player = new Player(384, 384);
         if (ghost == null) ghost = new Ghost(1200, 1200);
         if (gate == null) gate = new Gate(1200, 800);
@@ -65,6 +80,25 @@ public class GameWorld {
         EventManager.getInstance().addObserver(ghost);
         spawnItems();
         setupGhostPatrol();
+
+        // Apply saved data if loaded from save
+        applySavedData();
+    }
+
+    /**
+     * Apply saved data from GameSaveManager
+     * Called after world initialization
+     */
+    private void applySavedData() {
+        GameSaveManager saveManager = GameSaveManager.getInstance();
+        SaveData saveData = saveManager.getCurrentSaveData();
+
+        if (saveManager.isLoadedFromSave() && saveData != null) {
+            Gdx.app.log("GAMEWORLD", "Applying saved data...");
+            saveManager.applyLoadedData(saveData, this, tiledSpawnX, tiledSpawnY);
+        } else {
+            Gdx.app.log("GAMEWORLD", "New game - using Tiled spawn point");
+        }
     }
 
     private void parseEntitiesLayer() {
@@ -120,6 +154,12 @@ public class GameWorld {
                         }
                         break;
 
+                    case "Item":
+                        // Save spawn point for items
+                        itemSpawnPoints.add(new Vector2(x, y));
+                        System.out.println("DEBUG: Item spawn point added at: " + x + ", " + y);
+                        break;
+
                     case "Task":
                         if (object.getProperties().containsKey("TaskType")) {
                             String taskType = object.getProperties().get("TaskType", String.class);
@@ -141,6 +181,9 @@ public class GameWorld {
                 }
             }
         }
+
+        // Log total item spawn points found
+        System.out.println("DEBUG: Total item spawn points loaded: " + itemSpawnPoints.size);
     }
 
     private void parseInteractionLayer() {
@@ -250,41 +293,66 @@ public class GameWorld {
 
     private void spawnItems() {
         itemsOnGround = new Array<>();
+
+        // Get all item types and shuffle
         Array<ItemType> itemPool = new Array<>();
         for (ItemType type : ItemType.values()) itemPool.add(type);
         itemPool.shuffle();
 
-        float minVal = 350f;
-        float maxVal = 4800f;
-        float altarX = (gate != null) ? gate.getBounds().x : 1000;
-        float altarY = (gate != null) ? gate.getBounds().y : 1000;
+        // Shuffle spawn points for randomness
+        itemSpawnPoints.shuffle();
 
-        for (ItemType type : itemPool) {
-            boolean valid = false; int attempts = 0; float x = 0, y = 0;
-            while (!valid && attempts < 100) {
-                attempts++;
-                x = MathUtils.random(minVal, maxVal);
-                y = MathUtils.random(minVal, maxVal);
-                if (Vector2.dst(x, y, altarX, altarY) < 250f) continue;
+        System.out.println("DEBUG: Spawning " + itemPool.size + " items from " + itemSpawnPoints.size + " spawn points");
 
-                Rectangle candidateRect = new Rectangle(x, y, 24, 24);
-                boolean collisionFound = false;
-                for (RitualItem existing : itemsOnGround) {
-                    if (candidateRect.overlaps(existing.getBounds())) { collisionFound = true; break; }
+        // Use spawn points from Tiled if available
+        if (itemSpawnPoints.size > 0) {
+            int spawnIndex = 0;
+            for (ItemType type : itemPool) {
+                if (spawnIndex >= itemSpawnPoints.size) {
+                    System.out.println("WARNING: Not enough spawn points for all items!");
+                    break;
                 }
-                if (collisionFound) continue;
-                for (Rectangle wall : walls) {
-                    if (candidateRect.overlaps(wall)) { collisionFound = true; break; }
-                }
-                if (collisionFound) continue;
-                for (RectangleMapObject tele : teleports) {
-                    if (candidateRect.overlaps(tele.getRectangle())) { collisionFound = true; break; }
-                }
-                if (collisionFound) continue;
 
-                valid = true;
+                Vector2 spawnPoint = itemSpawnPoints.get(spawnIndex);
+                itemsOnGround.add(new RitualItem(type, spawnPoint.x, spawnPoint.y));
+                System.out.println("DEBUG: Spawned " + type.name() + " at " + spawnPoint.x + ", " + spawnPoint.y);
+                spawnIndex++;
             }
-            if (valid) itemsOnGround.add(new RitualItem(type, x, y));
+        } else {
+            // Fallback to random spawning if no spawn points defined in Tiled
+            System.out.println("WARNING: No item spawn points in Tiled, using random positions");
+            float minVal = 350f;
+            float maxVal = 4800f;
+            float altarX = (gate != null) ? gate.getBounds().x : 1000;
+            float altarY = (gate != null) ? gate.getBounds().y : 1000;
+
+            for (ItemType type : itemPool) {
+                boolean valid = false; int attempts = 0; float x = 0, y = 0;
+                while (!valid && attempts < 100) {
+                    attempts++;
+                    x = MathUtils.random(minVal, maxVal);
+                    y = MathUtils.random(minVal, maxVal);
+                    if (Vector2.dst(x, y, altarX, altarY) < 250f) continue;
+
+                    Rectangle candidateRect = new Rectangle(x, y, 24, 24);
+                    boolean collisionFound = false;
+                    for (RitualItem existing : itemsOnGround) {
+                        if (candidateRect.overlaps(existing.getBounds())) { collisionFound = true; break; }
+                    }
+                    if (collisionFound) continue;
+                    for (Rectangle wall : walls) {
+                        if (candidateRect.overlaps(wall)) { collisionFound = true; break; }
+                    }
+                    if (collisionFound) continue;
+                    for (RectangleMapObject tele : teleports) {
+                        if (candidateRect.overlaps(tele.getRectangle())) { collisionFound = true; break; }
+                    }
+                    if (collisionFound) continue;
+
+                    valid = true;
+                }
+                if (valid) itemsOnGround.add(new RitualItem(type, x, y));
+            }
         }
     }
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="170" height="170" tilewidth="32" tileheight="32" infinite="0" nextlayerid="18" nextobjectid="405">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="170" height="170" tilewidth="32" tileheight="32" infinite="0" nextlayerid="18" nextobjectid="417">
  <tileset firstgid="1" source="FieldsTilesetDarken.tsx"/>
  <tileset firstgid="65" source="house_details.tsx"/>
  <tileset firstgid="105" source="walls_and_floor.tsx"/>
@@ -1089,7 +1089,7 @@
    </object>
   </objectgroup>
   <objectgroup id="17" name="Entities">
-   <object id="361" name="Spawn Player" x="1455" y="350">
+   <object id="361" name="Spawn Player" x="1151" y="1550">
     <properties>
      <property name="Type" value="PlayerStart"/>
     </properties>
@@ -1123,6 +1123,90 @@
     <properties>
      <property name="Type" value="Gate"/>
     </properties>
+   </object>
+   <object id="405" name="Item Spawn 1" x="544" y="2330.67">
+    <properties>
+     <property name="ItemId" type="int" value="1"/>
+     <property name="Type" value="Item"/>
+    </properties>
+    <point/>
+   </object>
+   <object id="406" name="Item Spawn 2" x="1564" y="2500">
+    <properties>
+     <property name="ItemId" type="int" value="2"/>
+     <property name="Type" value="Item"/>
+    </properties>
+    <point/>
+   </object>
+   <object id="407" name="Item Spawn 3" x="2442" y="2062">
+    <properties>
+     <property name="ItemId" type="int" value="3"/>
+     <property name="Type" value="Item"/>
+    </properties>
+    <point/>
+   </object>
+   <object id="408" name="Item Spawn 4" x="1374" y="1760">
+    <properties>
+     <property name="ItemId" type="int" value="4"/>
+     <property name="Type" value="Item"/>
+    </properties>
+    <point/>
+   </object>
+   <object id="409" name="Item Spawn 5" x="510" y="1246">
+    <properties>
+     <property name="ItemId" type="int" value="5"/>
+     <property name="Type" value="Item"/>
+    </properties>
+    <point/>
+   </object>
+   <object id="410" name="Item Spawn 6" x="630" y="516">
+    <properties>
+     <property name="ItemId" type="int" value="6"/>
+     <property name="Type" value="Item"/>
+    </properties>
+    <point/>
+   </object>
+   <object id="411" name="Item Spawn 8" x="2226" y="974">
+    <properties>
+     <property name="ItemId" type="int" value="8"/>
+     <property name="Type" value="Item"/>
+    </properties>
+    <point/>
+   </object>
+   <object id="412" name="Item Spawn 7" x="2064" y="560">
+    <properties>
+     <property name="ItemId" type="int" value="7"/>
+     <property name="Type" value="Item"/>
+    </properties>
+    <point/>
+   </object>
+   <object id="413" name="Item Spawn 9" x="4184.67" y="4775.33">
+    <properties>
+     <property name="ItemId" type="int" value="9"/>
+     <property name="Type" value="Item"/>
+    </properties>
+    <point/>
+   </object>
+   <object id="414" name="Item Spawn 10" x="4706.67" y="4562">
+    <properties>
+     <property name="ItemId" type="int" value="10"/>
+     <property name="Type" value="Item"/>
+    </properties>
+    <point/>
+   </object>
+   <object id="415" name="Item Spawn 11" x="4505.33" y="4128.67">
+    <properties>
+     <property name="ItemId" type="int" value="11"/>
+     <property name="Type" value="Item"/>
+    </properties>
+    <point/>
+   </object>
+   <object id="416" name="Item Spawn 12" x="4507.33" y="3984.67">
+    <properties>
+     <property name="ItemId" type="int" value="12"/>
+     <property name="Type" value="Item"/>
+    </properties>
+    <point/>
    </object>
   </objectgroup>
  </group>

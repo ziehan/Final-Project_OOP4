@@ -13,207 +13,228 @@ libgdx-api/
 ├── ApiUsageExamples.java     # Contoh penggunaan
 └── model/
     ├── User.java             # Model user
-    └── SlotInfo.java         # Model slot info
+    ├── SlotInfo.java         # Model slot info
+    ├── SaveData.java         # Model save data lengkap
+    ├── GhostData.java        # Model data ghost
+    ├── TaskData.java         # Model data task
+    └── ItemData.java         # Model data item
 ```
 
 ## ⚙️ Konfigurasi
 
-### 1. Sesuaikan Package Name
+### Base URL
 
-Ubah package name di semua file sesuai dengan project kamu:
 ```java
-// Dari:
-package com.isthereanyone.api;
-
-// Ke (sesuaikan):
-package com.yourgame.api;
-```
-
-### 2. Sesuaikan Base URL
-
-Di file `ApiService.java`, ubah URL jika backend di-deploy:
-```java
-// Development (localhost)
 private static final String BASE_URL = "http://localhost:9090/api";
-
-// Production (contoh)
-private static final String BASE_URL = "https://api.yourgame.com/api";
 ```
 
-## 🚀 Cara Penggunaan
+---
 
-### 1. Inisialisasi ApiService
+## 🔥 PENTING: Masalah yang Harus Diperbaiki di Frontend
+
+### Masalah Utama
+1. **Data dari backend TIDAK di-apply ke game** - loadGame() dipanggil tapi data tidak digunakan
+2. **Tiled spawn point selalu override** - posisi dari save diabaikan
+3. **Ghost, task, inventory tidak di-save/load**
+
+### Solusi
+
+#### 1. Saat SAVE GAME - Simpan Semua Data
 
 ```java
-public class MyGame extends Game {
-    private ApiService api;
+public SaveData createSaveData() {
+    SaveData save = new SaveData();
     
-    @Override
-    public void create() {
-        api = new ApiService();
+    // Player
+    save.setPlayerHp(player.getHp());
+    save.setMaxHp(player.getMaxHp());
+    save.setPlayerX(player.getX());
+    save.setPlayerY(player.getY());
+    save.setPlayerDirection(player.getDirection());
+    
+    // Level
+    save.setCurrentLevel(currentLevel);
+    save.setCurrentRoom(currentRoom);
+    save.setCurrentMap(currentMapFile);
+    
+    // Ghost - SIMPAN POSISI GHOST!
+    for (Ghost ghost : ghosts) {
+        GhostData gd = new GhostData();
+        gd.setX(ghost.getX());
+        gd.setY(ghost.getY());
+        gd.setState(ghost.getState()); // "patrol", "chase", etc
+        save.addGhost(gd);
+    }
+    
+    // Tasks - SIMPAN STATUS TASK!
+    for (Task task : taskManager.getAllTasks()) {
+        TaskData td = new TaskData();
+        td.setTaskId(task.getId());
+        td.setTaskName(task.getName());
+        td.setStatus(task.getStatus()); // "completed", "in_progress"
+        td.setProgress(task.getProgress());
+        td.setMaxProgress(task.getMaxProgress());
+        save.getTasks().add(td);
         
-        // Cek koneksi server
-        api.healthCheck(new ApiService.ApiCallback() {
+        if (task.isCompleted()) {
+            save.addCompletedTask(task.getId());
+        }
+    }
+    
+    // Inventory - SIMPAN BARANG!
+    for (Item item : inventory.getItems()) {
+        ItemData id = new ItemData();
+        id.setItemId(item.getId());
+        id.setItemName(item.getName());
+        id.setItemType(item.getType());
+        id.setQuantity(item.getQuantity());
+        id.setEquipped(item.isEquipped());
+        save.addItem(id);
+    }
+    save.setCurrentlyHeldItemId(inventory.getHeldItemId());
+    
+    // PENTING: Set flag untuk spawn dari posisi save
+    save.setUseCustomSpawn(true);
+    save.setCustomSpawnX(player.getX());
+    save.setCustomSpawnY(player.getY());
+    save.setSpawnRoom(currentRoom);
+    
+    // Stats
+    save.setPlayTime(gameTime);
+    save.setDeathCount(deathCount);
+    save.setSaveTimestamp(System.currentTimeMillis());
+    
+    return save;
+}
+```
+
+#### 2. Saat LOAD GAME - Apply Semua Data
+
+```java
+public void applyLoadedData(SaveData save) {
+    // PENTING: Cek apakah harus pakai posisi dari save
+    if (save.isUseCustomSpawn()) {
+        // JANGAN pakai Tiled spawn point!
+        player.setPosition(save.getPlayerX(), save.getPlayerY());
+    } else {
+        // New game - pakai Tiled spawn point
+        player.setPosition(tiledSpawnPoint.x, tiledSpawnPoint.y);
+    }
+    
+    // Player stats
+    player.setHp(save.getPlayerHp());
+    player.setMaxHp(save.getMaxHp());
+    player.setDirection(save.getPlayerDirection());
+    
+    // Level
+    loadMap(save.getCurrentMap());
+    currentRoom = save.getCurrentRoom();
+    
+    // Ghost - RESTORE POSISI GHOST!
+    List<GhostData> ghostsData = save.getGhosts();
+    for (int i = 0; i < ghostsData.size() && i < ghosts.size(); i++) {
+        GhostData gd = ghostsData.get(i);
+        ghosts.get(i).setPosition(gd.getX(), gd.getY());
+        ghosts.get(i).setState(gd.getState());
+    }
+    
+    // Tasks - RESTORE STATUS TASK!
+    for (TaskData td : save.getTasks()) {
+        Task task = taskManager.getTask(td.getTaskId());
+        if (task != null) {
+            task.setStatus(td.getStatus());
+            task.setProgress(td.getProgress());
+        }
+    }
+    // Mark completed tasks
+    for (String taskId : save.getCompletedTaskIds()) {
+        taskManager.markCompleted(taskId);
+    }
+    
+    // Inventory - RESTORE BARANG!
+    inventory.clear();
+    for (ItemData id : save.getInventoryItems()) {
+        Item item = new Item(id.getItemId(), id.getItemName());
+        item.setType(id.getItemType());
+        item.setQuantity(id.getQuantity());
+        item.setEquipped(id.isEquipped());
+        inventory.addItem(item);
+    }
+    if (save.getCurrentlyHeldItemId() != null) {
+        inventory.holdItem(save.getCurrentlyHeldItemId());
+    }
+    
+    // Stats
+    gameTime = save.getPlayTime();
+    deathCount = save.getDeathCount();
+}
+```
+
+#### 3. Flag untuk New Game vs Load Game
+
+```java
+public class GameScreen {
+    private boolean isLoadedFromSave = false;
+    
+    // Dipanggil dari Load Game menu
+    public void loadFromSave(int slotId) {
+        isLoadedFromSave = true;
+        SaveLoadManager.getInstance().loadGame(slotId, new LoadCallback() {
             @Override
-            public void onSuccess(JsonValue response) {
-                System.out.println("Server connected!");
-            }
-            
-            @Override
-            public void onError(String error) {
-                System.out.println("Server offline: " + error);
+            public void onSuccess(SaveData save) {
+                applyLoadedData(save);
             }
         });
+    }
+    
+    // Dipanggil dari New Game menu
+    public void startNewGame() {
+        isLoadedFromSave = false;
+        // Reset semua ke default
+        player.setPosition(tiledSpawnPoint.x, tiledSpawnPoint.y);
+        player.setHp(3);
+        // ... reset lainnya
     }
 }
 ```
 
-### 2. Login
+---
+
+## 📋 Checklist Debug
+
+Tambahkan log di setiap langkah:
 
 ```java
-api.signin("username", "password", new ApiService.ApiCallback() {
-    @Override
-    public void onSuccess(JsonValue response) {
-        User user = ApiResponseParser.parseUserFromAuthResponse(response);
-        
-        // Simpan user untuk digunakan nanti
-        GameManager.setCurrentUser(user);
-        
-        // Pindah ke main menu
-        game.setScreen(new MainMenuScreen());
-    }
-    
-    @Override
-    public void onError(String error) {
-        // Tampilkan error di UI
-        loginDialog.showError(error);
-    }
-});
+// Saat save
+Gdx.app.log("SAVE", "Saving player at: " + player.getX() + ", " + player.getY());
+Gdx.app.log("SAVE", "Saving " + ghosts.size() + " ghosts");
+Gdx.app.log("SAVE", "Saving " + completedTasks.size() + " completed tasks");
+Gdx.app.log("SAVE", "Saving " + inventory.size() + " items");
+
+// Saat load
+Gdx.app.log("LOAD", "Loaded player position: " + save.getPlayerX() + ", " + save.getPlayerY());
+Gdx.app.log("LOAD", "useCustomSpawn: " + save.isUseCustomSpawn());
+Gdx.app.log("LOAD", "Loaded " + save.getGhosts().size() + " ghosts");
+Gdx.app.log("LOAD", "Loaded " + save.getCompletedTaskIds().size() + " completed tasks");
+
+// Saat apply
+Gdx.app.log("APPLY", "Setting player position to: " + x + ", " + y);
+Gdx.app.log("APPLY", "Setting player HP to: " + hp);
 ```
 
-### 3. Save Game
+---
 
-```java
-// Buat save data
-Json json = new Json();
-json.setOutputType(JsonWriter.OutputType.json);
+## 🌐 API Endpoints
 
-Map<String, Object> saveData = new HashMap<>();
-saveData.put("playerState", Map.of(
-    "currentMap", "level_2",
-    "posX", player.getX(),
-    "posY", player.getY(),
-    "health", player.getHealth()
-));
-saveData.put("stats", Map.of(
-    "allTimeDeathCount", stats.getDeathCount(),
-    "allTimeCompletedTask", stats.getCompletedTasks()
-));
-
-String saveDataJson = json.toJson(saveData);
-
-// Simpan ke slot 1
-api.saveGame(currentUser.getUsername(), 1, saveDataJson, new ApiService.ApiCallback() {
-    @Override
-    public void onSuccess(JsonValue response) {
-        showNotification("Game Saved!");
-    }
-    
-    @Override
-    public void onError(String error) {
-        showNotification("Failed to save: " + error);
-    }
-});
-```
-
-### 4. Load Game
-
-```java
-api.loadGame(currentUser.getUsername(), slotId, new ApiService.ApiCallback() {
-    @Override
-    public void onSuccess(JsonValue response) {
-        JsonValue saveData = ApiResponseParser.parseSaveData(response);
-        
-        // Apply ke game
-        JsonValue playerState = saveData.get("playerState");
-        String map = playerState.getString("currentMap");
-        float x = playerState.getFloat("posX");
-        float y = playerState.getFloat("posY");
-        int health = playerState.getInt("health");
-        
-        // Load map dan posisi player
-        loadMap(map);
-        player.setPosition(x, y);
-        player.setHealth(health);
-    }
-    
-    @Override
-    public void onError(String error) {
-        showNotification("Failed to load: " + error);
-    }
-});
-```
-
-### 5. Tampilkan Save Slots di Menu
-
-```java
-api.getAllSlots(currentUser.getUsername(), new ApiService.ApiCallback() {
-    @Override
-    public void onSuccess(JsonValue response) {
-        List<SlotInfo> slots = ApiResponseParser.parseSlotList(response);
-        
-        for (SlotInfo slot : slots) {
-            if (slot.isEmpty()) {
-                // Tampilkan "Empty Slot"
-                slotButtons[slot.getSlotId()].setText("Empty");
-            } else {
-                // Tampilkan info slot
-                slotButtons[slot.getSlotId()].setText(
-                    slot.getCurrentMap() + "\n" +
-                    "Deaths: " + slot.getAllTimeDeathCount()
-                );
-            }
-        }
-    }
-    
-    @Override
-    public void onError(String error) {
-        System.out.println("Error: " + error);
-    }
-});
-```
-
-## 📋 API Endpoints
-
-| Method | Endpoint | Fungsi |
-|--------|----------|--------|
-| POST | `/api/auth/signup` | Registrasi user baru |
-| POST | `/api/auth/signin` | Login user |
-| GET | `/api/auth/check/username/{username}` | Cek username tersedia |
-| GET | `/api/auth/check/email/{email}` | Cek email tersedia |
-| GET | `/api/auth/user/{username}` | Get user info |
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/signup` | Registrasi |
+| POST | `/api/auth/signin` | Login |
 | POST | `/api/save` | Simpan game |
 | GET | `/api/save/{userId}/{slotId}` | Load game |
 | GET | `/api/save/{userId}/slots` | Get semua slot |
 | DELETE | `/api/save/{userId}/{slotId}` | Hapus slot |
-| DELETE | `/api/save/{userId}` | Hapus semua slot |
 | GET | `/api/health` | Health check |
 
-## ⚠️ Penting
-
-1. **Asynchronous**: Semua API call bersifat async. Response dijalankan di GL thread via `Gdx.app.postRunnable()`.
-
-2. **Error Handling**: Selalu implement `onError()` untuk menangani error.
-
-3. **Internet Permission**: Pastikan ada permission di Android manifest:
-   ```xml
-   <uses-permission android:name="android.permission.INTERNET" />
-   ```
-
-4. **Thread Safety**: Jangan akses OpenGL resources langsung di callback. Gunakan `Gdx.app.postRunnable()` jika perlu.
-
-## 🌐 Base URL
-
-- **Development**: `http://localhost:9090/api`
-- **Production**: Sesuaikan dengan URL server yang di-deploy
+**Base URL**: `http://localhost:9090/api`
 

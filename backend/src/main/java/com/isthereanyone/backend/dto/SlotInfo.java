@@ -1,6 +1,7 @@
 package com.isthereanyone.backend.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 public class SlotInfo {
@@ -10,8 +11,20 @@ public class SlotInfo {
     private LocalDateTime lastUpdated;
 
     private String currentMap;
-    private Integer allTimeDeathCount;
-    private Integer allTimeCompletedTask;
+    private String currentRoom;
+    private Integer playerHp;
+    private Integer maxHp;
+
+    // Progress info
+    private Integer currentLevel;
+    private Integer deathCount;
+    private Integer tasksCompleted;
+    private Integer totalTasks;
+    private Long playTime; // dalam milliseconds
+
+    // Items info
+    private Integer itemCount;
+    private String currentlyHeldItem;
 
     public SlotInfo() {}
 
@@ -20,6 +33,7 @@ public class SlotInfo {
         this.isEmpty = isEmpty;
     }
 
+    @SuppressWarnings("unchecked")
     public static SlotInfo fromSaveData(Integer slotId, Map<String, Object> saveData, LocalDateTime lastUpdated) {
         SlotInfo info = new SlotInfo();
         info.setSlotId(slotId);
@@ -27,29 +41,86 @@ public class SlotInfo {
         info.setLastUpdated(lastUpdated);
 
         if (saveData != null) {
+            // Direct fields (new structure)
+            info.setCurrentMap(getStringValue(saveData, "currentMap"));
+            info.setCurrentRoom(getStringValue(saveData, "currentRoom"));
+            info.setPlayerHp(getIntValue(saveData, "playerHp"));
+            info.setMaxHp(getIntValue(saveData, "maxHp"));
+            info.setCurrentLevel(getIntValue(saveData, "currentLevel"));
+            info.setDeathCount(getIntValue(saveData, "deathCount"));
+            info.setPlayTime(getLongValue(saveData, "playTime"));
+            info.setCurrentlyHeldItem(getStringValue(saveData, "currentlyHeldItemId"));
+
+            // Tasks completed count
+            if (saveData.containsKey("completedTaskIds")) {
+                List<?> completedTasks = (List<?>) saveData.get("completedTaskIds");
+                info.setTasksCompleted(completedTasks != null ? completedTasks.size() : 0);
+            }
+            if (saveData.containsKey("totalTasksRequired")) {
+                info.setTotalTasks(getIntValue(saveData, "totalTasksRequired"));
+            }
+
+            // Inventory count
+            if (saveData.containsKey("inventoryItems")) {
+                List<?> items = (List<?>) saveData.get("inventoryItems");
+                info.setItemCount(items != null ? items.size() : 0);
+            }
+
+            // Legacy support: playerState structure
             if (saveData.containsKey("playerState")) {
-                @SuppressWarnings("unchecked")
                 Map<String, Object> playerState = (Map<String, Object>) saveData.get("playerState");
-                if (playerState != null && playerState.containsKey("currentMap")) {
-                    info.setCurrentMap((String) playerState.get("currentMap"));
+                if (playerState != null) {
+                    if (info.getCurrentMap() == null) {
+                        info.setCurrentMap(getStringValue(playerState, "currentMap"));
+                    }
+                    if (info.getPlayerHp() == null) {
+                        info.setPlayerHp(getIntValue(playerState, "hp"));
+                    }
                 }
             }
 
+            // Legacy support: stats structure
             if (saveData.containsKey("stats")) {
-                @SuppressWarnings("unchecked")
                 Map<String, Object> stats = (Map<String, Object>) saveData.get("stats");
                 if (stats != null) {
-                    if (stats.containsKey("allTimeDeathCount")) {
-                        info.setAllTimeDeathCount(((Number) stats.get("allTimeDeathCount")).intValue());
+                    if (info.getDeathCount() == null) {
+                        info.setDeathCount(getIntValue(stats, "allTimeDeathCount"));
                     }
-                    if (stats.containsKey("allTimeCompletedTask")) {
-                        info.setAllTimeCompletedTask(((Number) stats.get("allTimeCompletedTask")).intValue());
+                    if (info.getTasksCompleted() == null) {
+                        info.setTasksCompleted(getIntValue(stats, "allTimeCompletedTask"));
                     }
                 }
             }
         }
 
         return info;
+    }
+
+    private static String getStringValue(Map<String, Object> map, String key) {
+        Object value = map.get(key);
+        return value != null ? value.toString() : null;
+    }
+
+    private static Integer getIntValue(Map<String, Object> map, String key) {
+        Object value = map.get(key);
+        if (value == null) return null;
+        if (value instanceof Number) return ((Number) value).intValue();
+        try {
+            return Integer.parseInt(value.toString());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private static Long getLongValue(Map<String, Object> map, String key) {
+        Object value = map.get(key);
+        if (value == null) return null;
+        if (value instanceof Number) return ((Number) value).longValue();
+        try {
+            return Long.parseLong(value.toString());
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     public static SlotInfo emptySlot(Integer slotId) {
@@ -59,52 +130,55 @@ public class SlotInfo {
         return info;
     }
 
-    public Integer getSlotId() {
-        return slotId;
-    }
+    // ==================== GETTERS AND SETTERS ====================
 
-    public void setSlotId(Integer slotId) {
-        this.slotId = slotId;
-    }
+    public Integer getSlotId() { return slotId; }
+    public void setSlotId(Integer slotId) { this.slotId = slotId; }
 
-    public boolean isEmpty() {
-        return isEmpty;
-    }
+    public boolean isEmpty() { return isEmpty; }
+    public void setEmpty(boolean empty) { isEmpty = empty; }
 
-    public void setEmpty(boolean empty) {
-        isEmpty = empty;
-    }
+    public LocalDateTime getLastUpdated() { return lastUpdated; }
+    public void setLastUpdated(LocalDateTime lastUpdated) { this.lastUpdated = lastUpdated; }
 
-    public LocalDateTime getLastUpdated() {
-        return lastUpdated;
-    }
+    public String getCurrentMap() { return currentMap; }
+    public void setCurrentMap(String currentMap) { this.currentMap = currentMap; }
 
-    public void setLastUpdated(LocalDateTime lastUpdated) {
-        this.lastUpdated = lastUpdated;
-    }
+    public String getCurrentRoom() { return currentRoom; }
+    public void setCurrentRoom(String currentRoom) { this.currentRoom = currentRoom; }
 
-    public String getCurrentMap() {
-        return currentMap;
-    }
+    public Integer getPlayerHp() { return playerHp; }
+    public void setPlayerHp(Integer playerHp) { this.playerHp = playerHp; }
 
-    public void setCurrentMap(String currentMap) {
-        this.currentMap = currentMap;
-    }
+    public Integer getMaxHp() { return maxHp; }
+    public void setMaxHp(Integer maxHp) { this.maxHp = maxHp; }
 
-    public Integer getAllTimeDeathCount() {
-        return allTimeDeathCount;
-    }
+    public Integer getCurrentLevel() { return currentLevel; }
+    public void setCurrentLevel(Integer currentLevel) { this.currentLevel = currentLevel; }
 
-    public void setAllTimeDeathCount(Integer allTimeDeathCount) {
-        this.allTimeDeathCount = allTimeDeathCount;
-    }
+    public Integer getDeathCount() { return deathCount; }
+    public void setDeathCount(Integer deathCount) { this.deathCount = deathCount; }
 
-    public Integer getAllTimeCompletedTask() {
-        return allTimeCompletedTask;
-    }
+    public Integer getTasksCompleted() { return tasksCompleted; }
+    public void setTasksCompleted(Integer tasksCompleted) { this.tasksCompleted = tasksCompleted; }
 
-    public void setAllTimeCompletedTask(Integer allTimeCompletedTask) {
-        this.allTimeCompletedTask = allTimeCompletedTask;
-    }
+    public Integer getTotalTasks() { return totalTasks; }
+    public void setTotalTasks(Integer totalTasks) { this.totalTasks = totalTasks; }
+
+    public Long getPlayTime() { return playTime; }
+    public void setPlayTime(Long playTime) { this.playTime = playTime; }
+
+    public Integer getItemCount() { return itemCount; }
+    public void setItemCount(Integer itemCount) { this.itemCount = itemCount; }
+
+    public String getCurrentlyHeldItem() { return currentlyHeldItem; }
+    public void setCurrentlyHeldItem(String currentlyHeldItem) { this.currentlyHeldItem = currentlyHeldItem; }
+
+    // Legacy getters for backward compatibility
+    public Integer getAllTimeDeathCount() { return deathCount; }
+    public void setAllTimeDeathCount(Integer count) { this.deathCount = count; }
+
+    public Integer getAllTimeCompletedTask() { return tasksCompleted; }
+    public void setAllTimeCompletedTask(Integer count) { this.tasksCompleted = count; }
 }
 
