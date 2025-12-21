@@ -11,7 +11,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.isthereanyone.frontend.config.GameConfig;
 import com.isthereanyone.frontend.managers.ScreenManager;
-import com.isthereanyone.frontend.screens.SaveSlotScreen;
+import com.isthereanyone.frontend.screens.SaveLoadScreen;
 
 public class PauseMenu {
     private ShapeRenderer shapeRenderer;
@@ -205,7 +205,7 @@ public class PauseMenu {
             case 0: hide(); break;
             case 1: if (onSaveCallback != null) onSaveCallback.run(); break;
             case 2: showSettings = true; settingsSelectedOption = 0; break;
-            case 3: hide(); ScreenManager.getInstance().setScreen(new SaveSlotScreen()); break;
+            case 3: hide(); ScreenManager.getInstance().setScreen(new SaveLoadScreen()); break;
         }
     }
 

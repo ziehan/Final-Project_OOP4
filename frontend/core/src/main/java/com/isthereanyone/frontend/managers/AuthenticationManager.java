@@ -32,15 +32,12 @@ public class AuthenticationManager {
             return false;
         }
 
-        if (NetworkManager.getInstance().signup(username, password)) {
-            localUsers.put(username, password);
-            System.out.println("[AUTH] Signup successful for: " + username);
-            return true;
-        }
-
-        System.out.println("[AUTH] Signup failed for: " + username);
-        return false;
+        // Local signup (untuk offline mode)
+        localUsers.put(username, password);
+        System.out.println("[AUTH] Signup successful for: " + username);
+        return true;
     }
+
 
     public boolean login(String username, String password) {
         if (username == null || username.isEmpty() || password == null || password.isEmpty()) {
@@ -48,7 +45,8 @@ public class AuthenticationManager {
             return false;
         }
 
-        if (NetworkManager.getInstance().login(username, password)) {
+        // Local login check
+        if (localUsers.containsKey(username) && localUsers.get(username).equals(password)) {
             currentUsername = username;
             isAuthenticated = true;
             currentToken = generateToken();

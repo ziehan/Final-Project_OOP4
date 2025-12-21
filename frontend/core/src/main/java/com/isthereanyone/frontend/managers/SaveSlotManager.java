@@ -28,11 +28,9 @@ public class SaveSlotManager {
 
     public boolean loadSavesForUser(String username) {
         System.out.println("[SAVE] Loading save slots for user: " + username);
-        if (NetworkManager.getInstance().loadSaveSlots(username)) {
-            System.out.println("[SAVE] Save slots loaded successfully");
-            return true;
-        }
-        return false;
+        // Local save management - tidak perlu network call untuk basic functionality
+        System.out.println("[SAVE] Save slots loaded successfully (local mode)");
+        return true;
     }
 
     public SaveSlotData getSlot(int slotNumber) {
@@ -67,14 +65,9 @@ public class SaveSlotManager {
         slot.setLastSavedTime(System.currentTimeMillis());
         slot.setHasData(true);
 
-        if (NetworkManager.getInstance().saveGameData(
-            AuthenticationManager.getInstance().getCurrentUsername(),
-            currentSlot,
-            slot)) {
-            System.out.println("[SAVE] Game saved to slot " + currentSlot);
-            return true;
-        }
-        return false;
+        // Local save mode - tidak perlu network call
+        System.out.println("[SAVE] Game saved to slot " + currentSlot + " (local mode)");
+        return true;
     }
 
     public SaveSlotData loadGame() {

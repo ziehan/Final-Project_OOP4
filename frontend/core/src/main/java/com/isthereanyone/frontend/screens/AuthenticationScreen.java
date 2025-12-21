@@ -263,7 +263,7 @@ public class AuthenticationScreen extends BaseScreen {
         if (currentState == AuthState.LOGIN) {
             if (auth.login(username, password)) {
                 resetInputs();
-                ScreenManager.getInstance().setScreen(new SaveSlotScreen());
+                ScreenManager.getInstance().setScreen(new SaveLoadScreen());
             } else {
                 setErrorMessage("Login gagal!");
             }
