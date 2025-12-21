@@ -1,7 +1,7 @@
 package com.isthereanyone.frontend.config;
 
 public class NetworkConfig {
-    public static final String BACKEND_URL = "http://localhost:3000/api";
+    public static final String BACKEND_URL = "https://final-projectoop4-production.up.railway.app/api";
 
     public static final String ENDPOINT_SIGNUP = "/auth/signup";
     public static final String ENDPOINT_LOGIN = "/auth/login";

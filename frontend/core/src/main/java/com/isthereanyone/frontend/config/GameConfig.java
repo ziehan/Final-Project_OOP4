@@ -8,7 +8,7 @@ public class GameConfig {
     public static final float VIEWPORT_WIDTH = 640f;
     public static final float VIEWPORT_HEIGHT = 360f;
 
-    public static final String API_BASE_URL = "http://localhost:9090/api";
+    public static final String API_BASE_URL = "https://final-projectoop4-production.up.railway.app/api";
 
     // Connection settings
     public static final int CONNECTION_TIMEOUT = 10000; // 10 seconds

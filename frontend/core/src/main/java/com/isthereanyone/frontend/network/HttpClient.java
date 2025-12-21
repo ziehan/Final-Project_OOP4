@@ -13,7 +13,7 @@ import java.util.Map;
  * HTTP Client untuk komunikasi dengan backend
  */
 public class HttpClient {
-    private static final String BASE_URL = "http://localhost:9090";
+    private static final String BASE_URL = "https://final-projectoop4-production.up.railway.app";
     private final Json json;
 
     public HttpClient() {
